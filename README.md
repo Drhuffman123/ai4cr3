@@ -1,6 +1,6 @@
 # ai4cr3
 
-Version: 0.0.3
+Version: 0.0.4
 
 [![Crystal CI](https://github.com/drhuffman12/ai4cr3/actions/workflows/crystal.yml/badge.svg)](https://github.com/drhuffman12/ai4cr3/actions/workflows/crystal.yml)
 
@@ -29,19 +29,24 @@ TODO: Write usage instructions here
 TODO: Write development instructions here
 
 ## Contributing
-
-1. FORK it (<https://github.com/drhuffman12/ai4cr3/fork>)
-2. Make sure you are on the main BRANCH (`git branch`  `git reset --hard; git checkout main; git pull origin main`)
-3. Create your FEATURE branch (`git checkout -b my-new-feature`)
-4. TEST existing changes!!! (`crystal spec --error-trace`)
-5. VERIFY your "Changes to be committed" (`git status`)
-6. *** (Please) correctly update the VERSION!!! (Edit/Syncup `src/ai4cr3/about.cr` and `shard.yml` and in the notes above, under "SHOULD MATCH")
-7. ADD your CHANGES (`git add my-new-files`)
-8. Update and VERSION your changes (`git add README.md; git add shard.yml; git add src/ai4cr3/about.cr`)
-9. TEST your changes!!! (`crystal spec --error-trace`)
-10. COMMIT your changes to your new branch (`git commit -am 'my-new-feature description'`)
-11. PUSH to the branch (`git push origin my-new-feature`)
-12. Create a new Pull Request, get it Approved, and Merge it!
+* RESET via:
+  * Reset the a fresh up to date repo copy (or a fork):
+    * `gh repo clone Drhuffman123/ai4cr3`
+    * `cd Drhuffman123/ai4cr3`
+    * `git reset --hard; git checkout main; git pull origin main`
+  * Add a new branch:
+    * `git checkout -b YOUR_BREANCH_NAME`
+  * ADD your CHANGES (`git add my-new-files`)
+  * (Please) correctly update the VERSION!!! (Edit/Syncup `src/ai4cr3/about.cr` and `shard.yml` and in the notes above, under `SHOULD MATCH`)
+  * Add your changes and check them with:
+    * # TODO.. `rubocop`
+    * `crystal spec --error-trace`
+  * VERIFY your `Changes to be committed` (`git status`)
+  * Update your version in these files and git add them:
+    * `git add README.md; git add ai4cr3`
+  * Commit your changes and git push them:
+    * `git commit -am YOUR_COMMIT_MESSAGE`
+    * `git push origin YOUR_BREANCH_NAME`
 
 ## Contributors
 
