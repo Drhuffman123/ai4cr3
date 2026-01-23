@@ -2,7 +2,7 @@
 
 Version: 0.0.4
 
-[![Crystal CI](https://github.com/drhuffman12/ai4cr3/actions/workflows/crystal.yml/badge.svg)](https://github.com/drhuffman12/ai4cr3/actions/workflows/crystal.yml)
+[![Crystal CI](https://github.com/drhuffman12/ai4cr3/actions/workflows/crystal.yml)](https://github.com/drhuffman12/ai4cr3/actions/workflows/crystal.yml)
 
 ## Installation
 
