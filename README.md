@@ -1,6 +1,6 @@
 # ai4cr3
 
-Version: 0.0.2
+Version: 0.0.3
 
 [![Crystal CI](https://github.com/drhuffman12/ai4cr3/actions/workflows/crystal.yml/badge.svg)](https://github.com/drhuffman12/ai4cr3/actions/workflows/crystal.yml)
 
@@ -31,7 +31,7 @@ TODO: Write development instructions here
 ## Contributing
 
 1. FORK it (<https://github.com/drhuffman12/ai4cr3/fork>)
-2. Make sure you are on the main/master BRANCH (`git branch`  `git reset --hard; git checkout master; git pull origin master`)
+2. Make sure you are on the main BRANCH (`git branch`  `git reset --hard; git checkout main; git pull origin main`)
 3. Create your FEATURE branch (`git checkout -b my-new-feature`)
 4. TEST existing changes!!! (`crystal spec --error-trace`)
 5. VERIFY your "Changes to be committed" (`git status`)
