@@ -1,6 +1,6 @@
 # ai4cr3
 
-Version: 0.0.4
+Version: 0.0.5
 
 [![Crystal CI](https://github.com/drhuffman123/ai4cr3/actions/workflows/crystal.yml/badge.svg)](https://github.com/drhuffman12/ai4cr3/actions/workflows/crystal.yml)
 
@@ -47,6 +47,8 @@ TODO: Write development instructions here
   * Commit your changes and git push them:
     * `git commit -am YOUR_COMMIT_MESSAGE`
     * `git push origin YOUR_BREANCH_NAME`
+  * Verify the whole thing locally w/ act:
+    * `act -r`
 
 ## Contributors
 
