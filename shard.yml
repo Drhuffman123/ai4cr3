@@ -1,0 +1,46 @@
+name: ai4cr3
+version: 0.0.2
+
+authors:
+  - drhuffman12 <drhuffman12@gmail.com>
+
+crystal: '>= 1.16.2'
+
+license: MIT
+
+description: |
+  Example repo for a Crystal Language project
+
+dependencies:
+
+  # ascii_bar_charter:
+  #   github: drhuffman12/ascii_bar_charter
+
+  # counter_safe:
+  #   github: drhuffman12/counter_safe
+
+development_dependencies:
+
+  faker:
+    github: askn/faker
+
+  hardware:
+    github: crystal-community/hardware
+
+  spectator:
+    gitlab: arctic-fox/spectator
+    branch: master
+    version: ">= 0.9.33"
+
+  # ameba:
+  #   github: crystal-ameba/ameba
+
+  ## Un-comment/edit after Crystal 0.36.0 or 1.0 compatible:
+  # icr:
+  #  github: crystal-community/icr
+
+  ## Un-comment after Crystal 1.0 compatible:
+  # aasm:
+  #   github: veelenga/aasm.cr
+  #   # version: 0.11.0
+
