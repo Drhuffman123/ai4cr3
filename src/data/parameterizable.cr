@@ -13,12 +13,14 @@ module Ai4r3
     module Parameterizable
       # Class-level helpers for Parameterizable.
       module ClassMethods
+        property _params_info_ = Hash(String, Int32).new # TODO: check types
+
         # Get info on what can be parameterized on this algorithm.
         # It returns a hash with the following format:
         # { :param_name => "Info on the parameter" }
         # @return [Object]
         def get_parameters_info
-          @_params_info_ || {}
+          @_params_info_ || Hash(String, Int32).new
         end
 
         # Set info on what can be parameterized on this algorithm.
@@ -29,7 +31,7 @@ module Ai4r3
         def parameters_info(params_info)
           @_params_info_ = get_parameters_info.merge(params_info)
           params_info.each_key do |param|
-            attr_accessor param unless method_defined?(param) || method_defined?("#{param}=")
+            property param unless method_defined?(param) || method_defined?("#{param}=")
           end
         end
       end
@@ -51,7 +53,7 @@ module Ai4r3
       # { :param_name => parameter_value }
       # @return [Object]
       def get_parameters
-        params = {}
+        params = Hash(String, Int32).new
         self.class.get_parameters_info.each_key do |key|
           params[key] = send(key) if respond_to?(key)
         end

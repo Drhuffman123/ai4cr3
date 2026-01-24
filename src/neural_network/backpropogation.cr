@@ -7,9 +7,9 @@
 # the Mozilla Public License version 1.1  as published by the
 # Mozilla Foundation at http://www.mozilla.org/MPL/MPL-1.1.txt
 
-require_relative '../data/parameterizable'
-require_relative 'activation_functions'
-require_relative 'weight_initializations'
+require "../../data/parameterizable.cr"
+require "../../neural_network/activation_functions.cr"
+require "../../neural_network/weight_initializations.cr"
 
 module Ai4r3
   # Artificial Neural Networks are mathematical or computational models based on
@@ -74,7 +74,7 @@ module Ai4r3
     #
     #   # Use it: Evaluate data with the trained network
     #   net.eval([12, 48, 12, 25])
-    #     =>  [0.86, 0.01]
+    # => [0.86, 0.01]
     #
     # More about multilayer perceptron neural networks and backpropagation:
     #
@@ -88,10 +88,10 @@ module Ai4r3
     class Backpropagation
       include Ai4r::Data::Parameterizable
 
-      attr_accessor :structure, :weights, :activation_nodes, :last_changes
+      property :structure, :weights, :activation_nodes, :last_changes
 
       # When the activation parameter changes, update internal lambdas for each
-      # layer. Accepts a single symbol or an array of symbols (one for each
+      # layer. Accepts a single symbol or an array of symbols (one for each)
       # layer except the input layer).
       # @param symbols [Object]
       # @return [Object]
@@ -228,8 +228,7 @@ module Ai4r3
       # @return [Object]
       def train_batch(batch_inputs, batch_outputs)
         if batch_inputs.length != batch_outputs.length
-          raise ArgumentError,
-                'Inputs and outputs size mismatch'
+          raise ArgumentError.new("Inputs and outputs size mismatch")
         end
 
         batch_size = batch_inputs.length
@@ -279,16 +278,16 @@ module Ai4r3
       # Use +random_seed+ to make shuffling deterministic.
       # Returns an array with the average loss of each epoch.
       # @return [Object]
-      def train_epochs(data_inputs, data_outputs, epochs:, batch_size: 1,
-                       early_stopping_patience: nil, min_delta: 0.0,
-                       shuffle: true, random_seed: nil, &block)
+      def train_epochs(data_inputs, data_outputs, epochs = 1, batch_size = 1,
+                       early_stopping_patience = nil, min_delta = 0.0,
+                       shuffle = true, random_seed = nil, &block)
         if data_inputs.length != data_outputs.length
           raise ArgumentError,
-                'Inputs and outputs size mismatch'
+            "Inputs and outputs size mismatch"
         end
 
-        losses = []
-        best_loss = Float::INFINITY
+        losses = Array(Float64)
+        best_loss = Float64::INFINITY
         patience = early_stopping_patience
         patience_counter = 0
         rng = random_seed.nil? ? Random.new : Random.new(random_seed)
@@ -349,7 +348,7 @@ module Ai4r3
         self
       end
 
-      protected
+      # protected
 
       # Custom serialization. It used to fail trying to serialize because
       # it uses lambda functions internally, and they cannot be serialized.
@@ -359,7 +358,7 @@ module Ai4r3
       # * derivative_propagation_function
       # you must restore their values manually after loading the instance.
       # @return [Object]
-      def marshal_dump
+      protected def marshal_dump
         [
           @structure,
           @disable_bias,
@@ -368,21 +367,14 @@ module Ai4r3
           @weights,
           @last_changes,
           @activation_nodes,
-          @activation
+          @activation,
         ]
       end
 
       # @param ary [Object]
       # @return [Object]
-      def marshal_load(ary)
-        @structure,
-           @disable_bias,
-           @learning_rate,
-           @momentum,
-           @weights,
-           @last_changes,
-           @activation_nodes,
-           @activation = ary
+      protected def marshal_load(ary)
+        @structure, @disable_bias, @learning_rate, @momentum, @weights, @last_changes, @activation_nodes, @activation = ary
         self.weight_init = :uniform
         self.activation = @activation || :sigmoid
       end
@@ -390,7 +382,7 @@ module Ai4r3
       # Propagate error backwards
       # @param expected_output_values [Object]
       # @return [Object]
-      def backpropagate(expected_output_values)
+      protected def backpropagate(expected_output_values)
         check_output_dimension(expected_output_values.length)
         calculate_output_deltas(expected_output_values)
         calculate_internal_deltas
@@ -400,201 +392,201 @@ module Ai4r3
       # Propagate values forward
       # @param input_values [Object]
       # @return [Object]
-      def feedforward(input_values)
-        input_values.each_index do |input_index|
-          @activation_nodes.first[input_index] = input_values[input_index]
-        end
-        @weights.each_index do |n|
-          sums = Array.new(@structure[n + 1], 0.0)
-          @structure[n + 1].times do |j|
-            @activation_nodes[n].each_index do |i|
-              sums[j] += (@activation_nodes[n][i] * @weights[n][i][j])
-            end
-          end
-          if @activation[n] == :softmax
-            values = @propagation_functions[n].call(sums)
-            values.each_index { |j| @activation_nodes[n + 1][j] = values[j] }
-          else
-            sums.each_index do |j|
-              @activation_nodes[n + 1][j] = @propagation_functions[n].call(sums[j])
-            end
+      protecteddef feedforward(input_values)
+      input_values.each_index do |input_index|
+        @activation_nodes.first[input_index] = input_values[input_index]
+      end
+      @weights.each_index do |n|
+        sums = Array.new(@structure[n + 1], 0.0)
+        @structure[n + 1].times do |j|
+          @activation_nodes[n].each_index do |i|
+            sums[j] += (@activation_nodes[n][i] * @weights[n][i][j])
           end
         end
-      end
-
-      # Initialize neurons structure.
-      # @return [Object]
-      def init_activation_nodes
-        @activation_nodes = Array.new(@structure.length) do |n|
-          Array.new(@structure[n], 1.0)
-        end
-        return if disable_bias
-
-        @activation_nodes[0...-1].each { |layer| layer << 1.0 }
-      end
-
-      # Initialize the weight arrays using function specified with the
-      # initial_weight_function parameter
-      # @return [Object]
-      def init_weights
-        @weights = Array.new(@structure.length - 1) do |i|
-          nodes_origin = @activation_nodes[i].length
-          nodes_target = @structure[i + 1]
-          Array.new(nodes_origin) do |j|
-            Array.new(nodes_target) do |k|
-              @initial_weight_function.call(i, j, k)
-            end
+        if @activation[n] == :softmax
+          values = @propagation_functions[n].call(sums)
+          values.each_index { |j| @activation_nodes[n + 1][j] = values[j] }
+        else
+          sums.each_index do |j|
+            @activation_nodes[n + 1][j] = @propagation_functions[n].call(sums[j])
           end
         end
       end
+    end
 
-      # Momentum usage need to know how much a weight changed in the
-      # previous training. This method initialize the @last_changes
-      # structure with 0 values.
-      # @return [Object]
-      def init_last_changes
-        @last_changes = Array.new(@weights.length) do |w|
-          Array.new(@weights[w].length) do |i|
-            Array.new(@weights[w][i].length, 0.0)
+    # Initialize neurons structure.
+    # @return [Object]
+    protected def init_activation_nodes
+      @activation_nodes = Array.new(@structure.length) do |n|
+        Array.new(@structure[n], 1.0)
+      end
+      return if disable_bias
+
+      @activation_nodes[0...-1].each { |layer| layer << 1.0 }
+    end
+
+    # Initialize the weight arrays using function specified with the
+    # initial_weight_function parameter
+    # @return [Object]
+    protected def init_weights
+      @weights = Array.new(@structure.length - 1) do |i|
+        nodes_origin = @activation_nodes[i].length
+        nodes_target = @structure[i + 1]
+        Array.new(nodes_origin) do |j|
+          Array.new(nodes_target) do |k|
+            @initial_weight_function.call(i, j, k)
           end
         end
       end
+    end
 
-      # Calculate deltas for output layer
-      # @param expected_values [Object]
-      # @return [Object]
-      def calculate_output_deltas(expected_values)
-        output_values = @activation_nodes.last
-        output_deltas = []
-        func = @derivative_functions.last
-        output_values.each_index do |output_index|
-          if @loss_function == :cross_entropy && @activation == :softmax
-            output_deltas << (output_values[output_index] - expected_values[output_index])
-          else
-            error = expected_values[output_index] - output_values[output_index]
-            output_deltas << (func.call(output_values[output_index]) * error)
-          end
-        end
-        @deltas = [output_deltas]
-      end
-
-      # Calculate deltas for hidden layers
-      # @return [Object]
-      def calculate_internal_deltas
-        prev_deltas = @deltas.last
-        (@activation_nodes.length - 2).downto(1) do |layer_index|
-          layer_deltas = []
-          @activation_nodes[layer_index].each_index do |j|
-            error = 0.0
-            @structure[layer_index + 1].times do |k|
-              error += prev_deltas[k] * @weights[layer_index][j][k]
-            end
-            func = @derivative_functions[layer_index - 1]
-            layer_deltas[j] = func.call(@activation_nodes[layer_index][j]) * error
-          end
-          prev_deltas = layer_deltas
-          @deltas.unshift(layer_deltas)
+    # Momentum usage need to know how much a weight changed in the
+    # previous training. This method initialize the @last_changes
+    # structure with 0 values.
+    # @return [Object]
+    protected def init_last_changes
+      @last_changes = Array.new(@weights.length) do |w|
+        Array.new(@weights[w].length) do |i|
+          Array.new(@weights[w][i].length, 0.0)
         end
       end
+    end
 
-      # Update weights after @deltas have been calculated.
-      # @return [Object]
-      def update_weights
-        (@weights.length - 1).downto(0) do |n|
-          @weights[n].each_index do |i|
-            @weights[n][i].each_index do |j|
-              change = @deltas[n][j] * @activation_nodes[n][i]
-              @weights[n][i][j] += ((learning_rate * change) +
-                  (momentum * @last_changes[n][i][j]))
-              @last_changes[n][i][j] = change
-            end
+    # Calculate deltas for output layer
+    # @param expected_values [Object]
+    # @return [Object]
+    protected def calculate_output_deltas(expected_values)
+      output_values = @activation_nodes.last
+      output_deltas = Array(Float64).new
+      func = @derivative_functions.last
+      output_values.each_index do |output_index|
+        if @loss_function == :cross_entropy && @activation == :softmax
+          output_deltas << (output_values[output_index] - expected_values[output_index])
+        else
+          error = expected_values[output_index] - output_values[output_index]
+          output_deltas << (func.call(output_values[output_index]) * error)
+        end
+      end
+      @deltas = [output_deltas]
+    end
+
+    # Calculate deltas for hidden layers
+    # @return [Object]
+    protected def calculate_internal_deltas
+      prev_deltas = @deltas.last
+      (@activation_nodes.length - 2).downto(1) do |layer_index|
+        layer_deltas = Array(Float64).new
+        @activation_nodes[layer_index].each_index do |j|
+          error = 0.0
+          @structure[layer_index + 1].times do |k|
+            error += prev_deltas[k] * @weights[layer_index][j][k]
+          end
+          func = @derivative_functions[layer_index - 1]
+          layer_deltas[j] = func.call(@activation_nodes[layer_index][j]) * error
+        end
+        prev_deltas = layer_deltas
+        @deltas.unshift(layer_deltas)
+      end
+    end
+
+    # Update weights after @deltas have been calculated.
+    # @return [Object]
+    protected def update_weights
+      (@weights.length - 1).downto(0) do |n|
+        @weights[n].each_index do |i|
+          @weights[n][i].each_index do |j|
+            change = @deltas[n][j] * @activation_nodes[n][i]
+            @weights[n][i][j] += ((learning_rate * change) +
+                                  (momentum * @last_changes[n][i][j]))
+            @last_changes[n][i][j] = change
           end
         end
       end
+    end
 
-      # Calculate quadratic error for an expected output value
-      # Error = 0.5 * sum( (expected_value[i] - output_value[i])**2 )
-      # @param expected_output [Object]
-      # @return [Object]
-      def calculate_error(expected_output)
-        output_values = @activation_nodes.last
+    # Calculate quadratic error for an expected output value
+    # Error = 0.5 * sum( (expected_value[i] - output_value[i])**2 )
+    # @param expected_output [Object]
+    # @return [Object]
+    protected def calculate_error(expected_output)
+      output_values = @activation_nodes.last
+      error = 0.0
+      expected_output.each_index do |output_index|
+        error +=
+          0.5 * ((output_values[output_index] - expected_output[output_index])**2)
+      end
+      error
+    end
+
+    # Calculate loss for expected/actual vectors according to selected
+    # loss_function (:mse or :cross_entropy).
+    # @param expected [Object]
+    # @param actual [Object]
+    # @return [Object]
+    protected def calculate_loss(expected, actual)
+      case @loss_function
+      when :cross_entropy
+        epsilon = 1e-12
+        loss = 0.0
+        if @activation == :softmax
+          expected.each_index do |i|
+            p = [[actual[i], epsilon].max, 1 - epsilon].min
+            loss -= expected[i] * Math.log(p)
+          end
+        else
+          expected.each_index do |i|
+            p = [[actual[i], epsilon].max, 1 - epsilon].min
+            loss -= (expected[i] * Math.log(p)) + ((1 - expected[i]) * Math.log(1 - p))
+          end
+        end
+        loss
+      else
+        # Mean squared error
         error = 0.0
-        expected_output.each_index do |output_index|
-          error +=
-            0.5 * ((output_values[output_index] - expected_output[output_index])**2)
+        expected.each_index do |i|
+          error += 0.5 * ((expected[i] - actual[i])**2)
         end
         error
       end
-
-      # Calculate loss for expected/actual vectors according to selected
-      # loss_function (:mse or :cross_entropy).
-      # @param expected [Object]
-      # @param actual [Object]
-      # @return [Object]
-      def calculate_loss(expected, actual)
-        case @loss_function
-        when :cross_entropy
-          epsilon = 1e-12
-          loss = 0.0
-          if @activation == :softmax
-            expected.each_index do |i|
-              p = [[actual[i], epsilon].max, 1 - epsilon].min
-              loss -= expected[i] * Math.log(p)
-            end
-          else
-            expected.each_index do |i|
-              p = [[actual[i], epsilon].max, 1 - epsilon].min
-              loss -= (expected[i] * Math.log(p)) + ((1 - expected[i]) * Math.log(1 - p))
-            end
-          end
-          loss
-        else
-          # Mean squared error
-          error = 0.0
-          expected.each_index do |i|
-            error += 0.5 * ((expected[i] - actual[i])**2)
-          end
-          error
-        end
-      end
-
-      # @param inputs [Object]
-      # @return [Object]
-      def check_input_dimension(inputs)
-        return unless inputs != @structure.first
-
-        raise ArgumentError, 'Wrong number of inputs. ' \
-                             "Expected: #{@structure.first}, " \
-                             "received: #{inputs}."
-      end
-
-      # @param outputs [Object]
-      # @return [Object]
-      def check_output_dimension(outputs)
-        return unless outputs != @structure.last
-
-        raise ArgumentError, 'Wrong number of outputs. ' \
-                             "Expected: #{@structure.last}, " \
-                             "received: #{outputs}."
-      end
-
-      parameters_info disable_bias: 'If true, the algorithm will not use ' \
-                                   'bias nodes. False by default.',
-                      initial_weight_function: 'f(n, i, j) must return the initial ' \
-                                               'weight for the conection between the node i in layer n, and ' \
-                                               'node j in layer n+1. By default a random number in [-1, 1) range.',
-                      weight_init: 'Built-in weight initialization strategy (:uniform, :xavier or :he). Default: :uniform',
-                      propagation_function: 'By default: ' \
-                                            'lambda { |x| 1/(1+Math.exp(-1*(x))) }',
-                      derivative_propagation_function: 'Derivative of the propagation ' \
-                                                       'function, based on propagation function output. By default: ' \
-                                                       'lambda { |y| y*(1-y) }, where y=propagation_function(x)',
-                      activation: 'Activation function per layer. Provide a symbol or an array of symbols (:sigmoid, :tanh, :relu or :softmax). Default: :sigmoid',
-                      learning_rate: 'By default 0.25',
-                      momentum: 'By default 0.1. Set this parameter to 0 to disable ' \
-                                'momentum.',
-                      loss_function: 'Loss function used when training (:mse or ' \
-                                     ':cross_entropy). Default: :mse'
     end
+
+    # @param inputs [Object]
+    # @return [Object]
+    protected def check_input_dimension(inputs)
+      return unless inputs != @structure.first
+
+      raise ArgumentError, "Wrong number of inputs. " \
+                           "Expected: #{@structure.first}, " \
+                           "received: #{inputs}."
+    end
+
+    # @param outputs [Object]
+    # @return [Object]
+    protected def check_output_dimension(outputs)
+      return unless outputs != @structure.last
+
+      raise ArgumentError, "Wrong number of outputs. " \
+                           "Expected: #{@structure.last}, " \
+                           "received: #{outputs}."
+    end
+
+    # parameters_info disable_bias: "If true, the algorithm will not use " \
+    #                               "bias nodes. False by default.",
+    #                  initial_weight_function: "f(n, i, j) must return the initial " \
+    #                                           "weight for the conection between the node i in layer n, and " \
+    #                                           "node j in layer n+1. By default a random number in [-1, 1) range.",
+    #                  weight_init: "Built-in weight initialization strategy (:uniform, :xavier or :he). Default: :uniform",
+    #                  propagation_function: "By default: " \
+    #                                        "lambda { |x| 1/(1+Math.exp(-1*(x))) }",
+    #                  derivative_propagation_function: "Derivative of the propagation " \
+    #                                                   "function, based on propagation function output. By default: " \
+    #                                                   "lambda { |y| y*(1-y) }, where y=propagation_function(x)",
+    #                  activation: "Activation function per layer. Provide a symbol or an array of symbols (:sigmoid, :tanh, :relu or :softmax). Default: :sigmoid",
+    #                  learning_rate: "By default 0.25",
+    #                  momentum: "By default 0.1. Set this parameter to 0 to disable " \
+    #                            "momentum.",
+    #                  loss_function: "Loss function used when training (:mse or " \
+    #                                 ":cross_entropy). Default: :mse"
   end
 end
+# end
