@@ -10,14 +10,14 @@
 module Ai4r3
   module NeuralNetwork
     # Collection of common weight initialization strategies.
-    module WeightInitializations
+    class WeightInitializations
       # Uniform distribution in [-1, 1)
-      def uniform
-        ->(_n, _i, _j) { (rand * 2) - 1 }
+      def uniform # (_n, _i, _j)
+        (rand * 2) - 1
       end
 
       # Xavier/Glorot initialization based on layer dimensions
-      def xavier(structure)
+      def xavier(structure, layer, _i, _j)
         lambda do |layer, _i, _j|
           limit = Math.sqrt(6.0 / (structure[layer] + structure[layer + 1]))
           (rand * 2 * limit) - limit
@@ -32,7 +32,7 @@ module Ai4r3
         end
       end
 
-      module_function :uniform, :xavier, :he
+      # module_function :uniform, :xavier, :he
     end
   end
 end

@@ -77,7 +77,6 @@ describe "Ai4cr3::NeuralNetwork::ActivationFunctions" do
       end
     end
 
-
     context "softmax" do
       it "case 1.0" do
         given = 1.0
@@ -102,4 +101,3 @@ describe "Ai4cr3::NeuralNetwork::ActivationFunctions" do
     end
   end
 end
-
