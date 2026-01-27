@@ -7,7 +7,22 @@ describe Ai4cr3::NeuralNetwork::Backpropagation do
   it "works" do
     structure = [3, 120]
     tester = Ai4cr3::NeuralNetwork::Backpropagation.new(structure)
-    tester.should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+    puts "tester" + tester.to_s
+    (tester).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+  end
+
+  context "initialize" do
+    it "sets main vars" do
+      structure = [3, 120]
+      tester = Ai4cr3::NeuralNetwork::Backpropagation.new(structure)
+      (tester.structure).should be_a(Array(Int32))
+
+      (tester.weights).should be_a(Array(Array(Float64)))
+      (tester.activation_nodes).should be_a(Array(Array(Float64)))
+      (tester.last_changes).should be_a(Array(Array(Float64)))
+      (tester.weight_init).should be_a(String)
+      (tester.activation).should be_a(Array(Symbol))
+    end
   end
 end
 
