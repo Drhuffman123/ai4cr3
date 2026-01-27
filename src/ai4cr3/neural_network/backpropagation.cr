@@ -1,5 +1,9 @@
 # (re-)Ported from:       https://github.com/SergioFierens/ai4r
 
+# require "../data/parameterizable"
+require "./activation_functions"
+require "./weight_initializations"
+
 module Ai4cr3
   module NeuralNetwork
     class Backpropagation
