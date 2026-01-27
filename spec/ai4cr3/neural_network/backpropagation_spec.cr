@@ -12,7 +12,7 @@ describe Ai4cr3::NeuralNetwork::Backpropagation do
   end
 
   context "initialize" do
-    it "sets main vars" do
+    it "sets main var types" do
       structure = [3, 120]
       tester = Ai4cr3::NeuralNetwork::Backpropagation.new(structure)
       (tester.structure).should be_a(Array(Int32))
@@ -20,8 +20,20 @@ describe Ai4cr3::NeuralNetwork::Backpropagation do
       (tester.weights).should be_a(Array(Array(Float64)))
       (tester.activation_nodes).should be_a(Array(Array(Float64)))
       (tester.last_changes).should be_a(Array(Array(Float64)))
-      (tester.weight_init).should be_a(String)
+      (tester.weight_init).should be_a(Symbol)
       (tester.activation).should be_a(Array(Symbol))
+    end
+
+    it "sets main var values" do
+      structure = [3, 120]
+      tester = Ai4cr3::NeuralNetwork::Backpropagation.new(structure)
+      (tester.structure).should be_a(Array(Int32))
+
+      (tester.weights).should eq(Array(Array(Float64)).new)
+      (tester.activation_nodes).should eq(Array(Array(Float64)).new)
+      (tester.last_changes).should eq(Array(Array(Float64)).new)
+      (tester.weight_init).should eq(:uniform)
+      (tester.activation).should eq([:sigmoid]) # [:sigmoid, :tanh, :relu, :softmax])
     end
   end
 end
