@@ -1,5 +1,5 @@
 name: ai4cr3
-version: 0.0.8
+version: 0.0.9
 
 authors:
   - drhuffman12 <drhuffman12@gmail.com>
@@ -7,6 +7,10 @@ authors:
 crystal: '>= 1.16.2'
 
 license: MIT
+
+targets:
+  ai4cr3_version:
+    main: src/ai4cr3.cr
 
 description: |
   Example repo for a Crystal Language project
