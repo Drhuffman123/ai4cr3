@@ -1,3 +1,4 @@
 module Ai4cr3
-  # VERSION = `shards -v`
+  VERSION = `shards version`
+  puts "Ai4cr3 " + VERSION
 end
