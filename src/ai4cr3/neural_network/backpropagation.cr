@@ -10,11 +10,11 @@ module Ai4cr3
       # include Ai4r::Data::Parameterizable
 
       property structure : Array(Int32)
+      property activation : Array(Symbol) # one per structure layer
       property weights : Array(Array(Float64))
       property activation_nodes : Array(Array(Float64))
       property last_changes : Array(Array(Float64))
       property weight_init : Symbol
-      property activation : Array(Symbol)
 
       # When the activation parameter changes, update internal lambdas for each
       # layer. Accepts a single symbol or an array of symbols (one for each
@@ -40,6 +40,34 @@ module Ai4cr3
         end
       end
 
+      def propagation_function
+        
+      end
+
+      def derivative_function
+      end
+
+      # def activation_sigmoid(x)
+      #   1.0 / (1.0 + Math.exp(-x))
+      # end
+
+      # def activation_tanh(x)
+      #   Math.tanh(x)
+      # end
+
+      # def activation_relu(x)
+      #   [x, 0].max
+      # end
+
+      # def activation_softmax(x)
+      #   block do |arr|
+      #     max = arr.max
+      #     exps = arr.map { |v| Math.exp(v - max) }
+      #     sum = exps.inject(:+)
+      #     exps.map { |e| e / sum }
+      #   end
+      # end
+
       # @return [Object]
       def activation
         if @activation.is_a?(Array)
@@ -50,6 +78,33 @@ module Ai4cr3
           end
         else
           @activation
+        end
+      end
+
+      def activation_funcs_simplified(x)
+        if @activation == :sigmoid
+          1.0 / (1.0 + Math.exp(-x))
+        elsif @activation == :tanh
+          Math.tanh(x)
+        elsif @activation == :relu
+          [x, 0].max
+        # else # :softmax
+        #   max = arr.max
+        #   exps = arr.map { |v| Math.exp(v - max) }
+        #   sum = exps.inject(:+)
+        #   exps.map { |e| e / sum }
+        end
+      end
+
+      def activation_derivs_simplified(y)
+        if @activation == :sigmoid
+          y * (1 - y)
+        elsif @activation == :tanh
+          1.0 - (y**2)
+        elsif @activation == :relu
+          y.positive? ? 1.0 : 0.0
+        # else # :softmax
+        #   y * (1 - y)
         end
       end
 
