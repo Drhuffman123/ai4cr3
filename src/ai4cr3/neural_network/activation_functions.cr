@@ -1,4 +1,4 @@
-module Ai4r
+module Ai4cr3
   module NeuralNetwork
     # Collection of common activation functions and their derivatives.
     module ActivationFunctions

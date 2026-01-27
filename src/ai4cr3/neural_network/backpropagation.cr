@@ -2,7 +2,7 @@
 
 # require "../data/parameterizable"
 require "./activation_functions"
-require "./weight_initializations"
+# require "./weight_initializations"
 
 module Ai4cr3
   module NeuralNetwork
@@ -57,14 +57,19 @@ module Ai4cr3
       # @return [Object]
       def weight_init=(symbol)
         @weight_init = symbol
-        @initial_weight_function = case symbol
-                                   when :xavier
-                                     Ai4r::NeuralNetwork::WeightInitializations.xavier(@structure)
-                                   when :he
-                                     Ai4r::NeuralNetwork::WeightInitializations.he(@structure)
-                                   else
-                                     Ai4r::NeuralNetwork::WeightInitializations.uniform
-                                   end
+        # @initial_weight_function = initial_weight_function(n, i, j)
+      end
+
+      def initial_weight_function # (n, i, j)
+        (rand * 2) - 1
+        # case n
+        # when :xavier
+        #   Ai4r::NeuralNetwork::WeightInitializations.xavier(i,j)
+        # when :he
+        #   Ai4r::NeuralNetwork::WeightInitializations.he(i,j)
+        # else
+        #   Ai4r::NeuralNetwork::WeightInitializations.uniform
+        # end
       end
 
       # @param symbol [Object]
@@ -350,7 +355,7 @@ module Ai4cr3
         @activation_nodes = Array.new(@structure.size) do |n|
           Array.new(@structure[n], 1.0)
         end
-        return if disable_bias
+        return if @disable_bias
 
         @activation_nodes[0...-1].each { |layer| layer << 1.0 }
       end
@@ -364,7 +369,8 @@ module Ai4cr3
           nodes_target = @structure[i + 1]
           Array.new(nodes_origin) do |j|
             Array.new(nodes_target) do |k|
-              @initial_weight_function.call(i, j, k)
+              # Ai4cr3::NeuralNetwork::WeightInitializations.initial_weight_function(i, j, k)
+              initial_weight_function
             end
           end
         end
