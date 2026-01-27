@@ -2,7 +2,7 @@ require "../../spec_helper"
 require "../../../src/ai4cr3/neural_network/backpropagation.cr"
 
 STRUCTURE = [3, 120]
-TESTER = Ai4cr3::NeuralNetwork::Backpropagation.new(STRUCTURE)
+TESTER    = Ai4cr3::NeuralNetwork::Backpropagation.new(STRUCTURE)
 
 describe Ai4cr3::NeuralNetwork::Backpropagation do
   # TODO: Write tests
@@ -51,7 +51,6 @@ describe Ai4cr3::NeuralNetwork::Backpropagation do
       (example >= -1.0).should eq(true)
     end
   end
-
 end
 
 # In spec/ai4cr3/neural_network/backpropagation_spec.cr:2:1

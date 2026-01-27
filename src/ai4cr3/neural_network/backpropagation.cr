@@ -2,6 +2,7 @@
 
 # require "../data/parameterizable"
 require "./activation_functions"
+
 # require "./weight_initializations"
 
 module Ai4cr3
@@ -41,7 +42,6 @@ module Ai4cr3
       end
 
       def propagation_function
-        
       end
 
       def derivative_function
@@ -88,11 +88,11 @@ module Ai4cr3
           Math.tanh(x)
         elsif @activation == :relu
           [x, 0].max
-        # else # :softmax
-        #   max = arr.max
-        #   exps = arr.map { |v| Math.exp(v - max) }
-        #   sum = exps.inject(:+)
-        #   exps.map { |e| e / sum }
+          # else # :softmax
+          #   max = arr.max
+          #   exps = arr.map { |v| Math.exp(v - max) }
+          #   sum = exps.inject(:+)
+          #   exps.map { |e| e / sum }
         end
       end
 
@@ -103,8 +103,8 @@ module Ai4cr3
           1.0 - (y**2)
         elsif @activation == :relu
           y.positive? ? 1.0 : 0.0
-        # else # :softmax
-        #   y * (1 - y)
+          # else # :softmax
+          #   y * (1 - y)
         end
       end
 
