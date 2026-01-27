@@ -39,7 +39,7 @@ TODO: Write development instructions here
   * ADD your CHANGES (`git add my-new-files`)
   * (Please) correctly update the VERSION!!! (Edit/Syncup `src/ai4cr3/about.cr` and `shard.yml` and in the notes above, under `SHOULD MATCH`)
   * Add your changes and check them with:
-    * # TODO.. `rubocop`
+    * `crystal tool format`
     * `crystal spec --error-trace`
   * VERIFY your `Changes to be committed` (`git status`)
   * Update your version in these files and git add them:
