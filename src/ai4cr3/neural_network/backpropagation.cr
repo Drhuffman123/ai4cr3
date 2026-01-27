@@ -13,7 +13,7 @@ module Ai4cr3
       property weights : Array(Array(Float64))
       property activation_nodes : Array(Array(Float64))
       property last_changes : Array(Array(Float64))
-      property weight_init : String # Symbol
+      property weight_init : Symbol
       property activation : Array(Symbol)
 
       # When the activation parameter changes, update internal lambdas for each
@@ -55,12 +55,12 @@ module Ai4cr3
 
       # @param symbol [Object]
       # @return [Object]
-      def weight_init=(string) # (symbol)
-        @weight_init = string
-        @initial_weight_function = case string
-                                   when "xavier"
+      def weight_init=(symbol)
+        @weight_init = symbol
+        @initial_weight_function = case symbol
+                                   when :xavier
                                      Ai4r::NeuralNetwork::WeightInitializations.xavier(@structure)
-                                   when "he"
+                                   when :he
                                      Ai4r::NeuralNetwork::WeightInitializations.he(@structure)
                                    else
                                      Ai4r::NeuralNetwork::WeightInitializations.uniform
@@ -95,7 +95,7 @@ module Ai4cr3
       # @param activation [Object]
       # @param weight_init [Object]
       # @return [Object]
-      def initialize(network_structure : Array(Int32), activation = [:sigmoid], weight_init = "uniform")
+      def initialize(network_structure : Array(Int32), activation = [:sigmoid], weight_init = :uniform)
         @structure = Array(Int32).new
         @weights = Array(Array(Float64)).new
         @activation_nodes = Array(Array(Float64)).new
@@ -305,7 +305,7 @@ module Ai4cr3
       # @return [Object]
       protected def marshal_load(ary)
         @structure, @disable_bias, @learning_rate, @momentum, @weights, @last_changes, @activation_nodes, @activation = ary
-        @weight_init = "uniform"
+        @weight_init = :uniform
         @activation = @activation || :sigmoid
       end
 
