@@ -1,8 +1,8 @@
 # (re-)Ported from:       https://github.com/SergioFierens/ai4r
 
 # require "../data/parameterizable"
-require "./activation_functions"
-require "./weight_initializations"
+# require "./activation_functions"
+# require "./weight_initializations"
 
 module Ai4cr3
   module NeuralNetwork
@@ -10,11 +10,11 @@ module Ai4cr3
       # include Ai4r::Data::Parameterizable
 
       property structure : Array(Int32)
+      property activation : Array(Symbol) # one per structure layer
       property weights : Array(Array(Float64))
       property activation_nodes : Array(Array(Float64))
       property last_changes : Array(Array(Float64))
       property weight_init : Symbol
-      property activation : Array(Symbol)
 
       # When the activation parameter changes, update internal lambdas for each
       # layer. Accepts a single symbol or an array of symbols (one for each
@@ -40,6 +40,33 @@ module Ai4cr3
         end
       end
 
+      def propagation_function
+      end
+
+      def derivative_function
+      end
+
+      # def activation_sigmoid(x)
+      #   1.0 / (1.0 + Math.exp(-x))
+      # end
+
+      # def activation_tanh(x)
+      #   Math.tanh(x)
+      # end
+
+      # def activation_relu(x)
+      #   [x, 0].max
+      # end
+
+      # def activation_softmax(x)
+      #   block do |arr|
+      #     max = arr.max
+      #     exps = arr.map { |v| Math.exp(v - max) }
+      #     sum = exps.inject(:+)
+      #     exps.map { |e| e / sum }
+      #   end
+      # end
+
       # @return [Object]
       def activation
         if @activation.is_a?(Array)
@@ -53,18 +80,50 @@ module Ai4cr3
         end
       end
 
+      def activation_funcs_simplified(x)
+        if @activation == :sigmoid
+          1.0 / (1.0 + Math.exp(-x))
+        elsif @activation == :tanh
+          Math.tanh(x)
+        elsif @activation == :relu
+          [x, 0].max
+          # else # :softmax
+          #   max = arr.max
+          #   exps = arr.map { |v| Math.exp(v - max) }
+          #   sum = exps.inject(:+)
+          #   exps.map { |e| e / sum }
+        end
+      end
+
+      def activation_derivs_simplified(y)
+        if @activation == :sigmoid
+          y * (1 - y)
+        elsif @activation == :tanh
+          1.0 - (y**2)
+        elsif @activation == :relu
+          y.positive? ? 1.0 : 0.0
+          # else # :softmax
+          #   y * (1 - y)
+        end
+      end
+
       # @param symbol [Object]
       # @return [Object]
       def weight_init=(symbol)
         @weight_init = symbol
-        @initial_weight_function = case symbol
-                                   when :xavier
-                                     Ai4r::NeuralNetwork::WeightInitializations.xavier(@structure)
-                                   when :he
-                                     Ai4r::NeuralNetwork::WeightInitializations.he(@structure)
-                                   else
-                                     Ai4r::NeuralNetwork::WeightInitializations.uniform
-                                   end
+        # @initial_weight_function = initial_weight_function(n, i, j)
+      end
+
+      def initial_weight_function # (n, i, j)
+        (rand * 2) - 1
+        # case n
+        # when :xavier
+        #   Ai4r::NeuralNetwork::WeightInitializations.xavier(i,j)
+        # when :he
+        #   Ai4r::NeuralNetwork::WeightInitializations.he(i,j)
+        # else
+        #   Ai4r::NeuralNetwork::WeightInitializations.uniform
+        # end
       end
 
       # @param symbol [Object]
@@ -350,7 +409,7 @@ module Ai4cr3
         @activation_nodes = Array.new(@structure.size) do |n|
           Array.new(@structure[n], 1.0)
         end
-        return if disable_bias
+        return if @disable_bias
 
         @activation_nodes[0...-1].each { |layer| layer << 1.0 }
       end
@@ -364,7 +423,8 @@ module Ai4cr3
           nodes_target = @structure[i + 1]
           Array.new(nodes_origin) do |j|
             Array.new(nodes_target) do |k|
-              @initial_weight_function.call(i, j, k)
+              # Ai4cr3::NeuralNetwork::WeightInitializations.initial_weight_function(i, j, k)
+              initial_weight_function
             end
           end
         end
