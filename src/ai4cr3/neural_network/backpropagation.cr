@@ -367,11 +367,11 @@ module Ai4cr3
           end
           if @activation[n] == :softmax
             # values = @propagation_functions[n].call(sums)
-            values = @propagation_functions(n).call(sums)
+            values = propagation_functions(n) # TODO: .call(sums)
             values.each_index { |j| @activation_nodes[n + 1][j] = values[j] }
           else
             sums.each_index do |j|
-              @activation_nodes[n + 1][j] = @propagation_functions(n).call(sums[j])
+              @activation_nodes[n + 1][j] = propagation_functions(n) # TODO: .call(sums[j])
             end
           end
         end
