@@ -30,57 +30,17 @@ module Ai4cr3
           raise ArgumentError.new("Activation array size must match number of layers (#{layer_count})")
         end
         @activation = symbols
-        @propagation_functions = @activation.map do |a|
-          # Ai4r::NeuralNetwork::ActivationFunctions::FUNCTIONS[a] ||
-          #  Ai4r::NeuralNetwork::ActivationFunctions::FUNCTIONS[:sigmoid]
-        end
-        @derivative_functions = @activation.map do |a|
-          # Ai4r::NeuralNetwork::ActivationFunctions::DERIVATIVES[a] ||
-          #   Ai4r::NeuralNetwork::ActivationFunctions::DERIVATIVES[:sigmoid]
-        end
+        # @propagation_functions = @activation.map do |a|
+        #   # Ai4r::NeuralNetwork::ActivationFunctions::FUNCTIONS[a] ||
+        #   #  Ai4r::NeuralNetwork::ActivationFunctions::FUNCTIONS[:sigmoid]
+        # end
+        # @derivative_functions = @activation.map do |a|
+        #   # Ai4r::NeuralNetwork::ActivationFunctions::DERIVATIVES[a] ||
+        #   #   Ai4r::NeuralNetwork::ActivationFunctions::DERIVATIVES[:sigmoid]
+        # end
       end
 
-      def propagation_function
-      end
-
-      def derivative_function
-      end
-
-      # def activation_sigmoid(x)
-      #   1.0 / (1.0 + Math.exp(-x))
-      # end
-
-      # def activation_tanh(x)
-      #   Math.tanh(x)
-      # end
-
-      # def activation_relu(x)
-      #   [x, 0].max
-      # end
-
-      # def activation_softmax(x)
-      #   block do |arr|
-      #     max = arr.max
-      #     exps = arr.map { |v| Math.exp(v - max) }
-      #     sum = exps.inject(:+)
-      #     exps.map { |e| e / sum }
-      #   end
-      # end
-
-      # @return [Object]
-      def activation
-        if @activation.is_a?(Array)
-          if @set_by_loss || (@loss_function == :cross_entropy && @activation_overridden)
-            @activation.first
-          else
-            @activation
-          end
-        else
-          @activation
-        end
-      end
-
-      def activation_funcs_simplified(x)
+      def propagation_functions(x)
         if @activation == :sigmoid
           1.0 / (1.0 + Math.exp(-x))
         elsif @activation == :tanh
@@ -95,7 +55,7 @@ module Ai4cr3
         end
       end
 
-      def activation_derivs_simplified(y)
+      def derivative_functions(y)
         if @activation == :sigmoid
           y * (1 - y)
         elsif @activation == :tanh
@@ -104,6 +64,19 @@ module Ai4cr3
           y.positive? ? 1.0 : 0.0
           # else # :softmax
           #   y * (1 - y)
+        end
+      end
+
+      # @return [Object]
+      def activation
+        if @activation.is_a?(Array)
+          if @set_by_loss || (@loss_function == :cross_entropy && @activation_overridden)
+            @activation.first
+          else
+            @activation
+          end
+        else
+          @activation
         end
       end
 
@@ -393,11 +366,12 @@ module Ai4cr3
             end
           end
           if @activation[n] == :softmax
-            values = @propagation_functions[n].call(sums)
+            # values = @propagation_functions[n].call(sums)
+            values = propagation_functions(n) # TODO: .call(sums)
             values.each_index { |j| @activation_nodes[n + 1][j] = values[j] }
           else
             sums.each_index do |j|
-              @activation_nodes[n + 1][j] = @propagation_functions[n].call(sums[j])
+              @activation_nodes[n + 1][j] = propagation_functions(n) # TODO: .call(sums[j])
             end
           end
         end
