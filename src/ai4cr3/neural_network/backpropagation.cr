@@ -1,9 +1,5 @@
 # (re-)Ported from:       https://github.com/SergioFierens/ai4r
 
-# require "../data/parameterizable"
-# require "./activation_functions"
-# require "./weight_initializations"
-
 module Ai4cr3
   module NeuralNetwork
     class Backpropagation
@@ -21,7 +17,8 @@ module Ai4cr3
       # layer except the input layer).
       # @param symbols [Object]
       # @return [Object]
-      def activation=(symbols)
+      # def activation=(symbols)
+      def activation_param_change(symbols)
         symbols = [symbols] unless symbols.is_a?(Array)
         layer_count = @structure.size - 1
         if symbols.size == 1
@@ -41,12 +38,14 @@ module Ai4cr3
       end
 
       def propagation_functions(x)
-        if @activation == :sigmoid
+        if @activation.first == :sigmoid
           1.0 / (1.0 + Math.exp(-x))
-        elsif @activation == :tanh
-          Math.tanh(x)
-        elsif @activation == :relu
-          [x, 0].max
+        # elsif @activation.first == :tanh
+        #   Math.tanh(x)
+        # elsif @activation.first == :relu
+        #   [x, 0].max
+        else
+          raise ":tanh and :relu and :softmax not supported yet, particularly #{@activation} (TODO)"
           # else # :softmax
           #   max = arr.max
           #   exps = arr.map { |v| Math.exp(v - max) }
@@ -56,19 +55,22 @@ module Ai4cr3
       end
 
       def derivative_functions(y)
-        if @activation == :sigmoid
+        if @activation.first == :sigmoid
           y * (1 - y)
-        elsif @activation == :tanh
-          1.0 - (y**2)
-        elsif @activation == :relu
-          y.positive? ? 1.0 : 0.0
+        # elsif @activation.first == :tanh
+        #   1.0 - (y**2)
+        # elsif @activation.first == :relu
+        #   y.positive? ? 1.0 : 0.0
+        else
+          raise ":tanh and :relu and :softmax not supported yet (TODO)"
           # else # :softmax
           #   y * (1 - y)
         end
       end
 
+
       # @return [Object]
-      def activation
+      def activation_method
         if @activation.is_a?(Array)
           if @set_by_loss || (@loss_function == :cross_entropy && @activation_overridden)
             @activation.first
@@ -137,7 +139,7 @@ module Ai4cr3
         @weight_init = weight_init
         @custom_propagation = false
         @set_by_loss = true
-        @activation = activation
+        @activation = activation_method
 
         @activation_overridden = (activation != :sigmoid)
         @set_by_loss = false
@@ -312,34 +314,34 @@ module Ai4cr3
         self
       end
 
-      # Custom serialization. It used to fail trying to serialize because
-      # it uses lambda functions internally, and they cannot be serialized.
-      # Now it does not fail, but if you customize the values of
-      # * initial_weight_function
-      # * propagation_function
-      # * derivative_propagation_function
-      # you must restore their values manually after loading the instance.
-      # @return [Object]
-      protected def marshal_dump
-        [
-          @structure,
-          @disable_bias,
-          @learning_rate,
-          @momentum,
-          @weights,
-          @last_changes,
-          @activation_nodes,
-          @activation,
-        ]
-      end
+      # # Custom serialization. It used to fail trying to serialize because
+      # # it uses lambda functions internally, and they cannot be serialized.
+      # # Now it does not fail, but if you customize the values of
+      # # * initial_weight_function
+      # # * propagation_function
+      # # * derivative_propagation_function
+      # # you must restore their values manually after loading the instance.
+      # # @return [Object]
+      # protected def marshal_dump
+      #   [
+      #     @structure,
+      #     @disable_bias,
+      #     @learning_rate,
+      #     @momentum,
+      #     @weights,
+      #     @last_changes,
+      #     @activation_nodes,
+      #     @activation,
+      #   ]
+      # end
 
-      # @param ary [Object]
-      # @return [Object]
-      protected def marshal_load(ary)
-        @structure, @disable_bias, @learning_rate, @momentum, @weights, @last_changes, @activation_nodes, @activation = ary
-        @weight_init = :uniform
-        @activation = @activation || :sigmoid
-      end
+      # # @param ary [Object]
+      # # @return [Object]
+      # protected def marshal_load(ary)
+      #   @structure, @disable_bias, @learning_rate, @momentum, @weights, @last_changes, @activation_nodes, @activation = ary
+      #   @weight_init = :uniform
+      #   @activation = @activation || :sigmoid
+      # end
 
       # Propagate error backwards
       # @param expected_output_values [Object]
@@ -422,7 +424,8 @@ module Ai4cr3
       protected def calculate_output_deltas(expected_values)
         output_values = @activation_nodes.last
         output_deltas = Array(Array(Float64)).new
-        func = @derivative_functions.last
+        # func = @derivative_functions.last
+        func = derivative_functions.last
         output_values.each_index do |output_index|
           if @loss_function == :cross_entropy && @activation == :softmax
             output_deltas << (output_values[output_index] - expected_values[output_index])
@@ -445,7 +448,8 @@ module Ai4cr3
             @structure[layer_index + 1].times do |k|
               error += prev_deltas[k] * @weights[layer_index][j][k]
             end
-            func = @derivative_functions[layer_index - 1]
+            # func = @derivative_functions[layer_index - 1]
+            func = derivative_functions[layer_index - 1]
             layer_deltas[j] = func.call(@activation_nodes[layer_index][j]) * error
           end
           prev_deltas = layer_deltas
