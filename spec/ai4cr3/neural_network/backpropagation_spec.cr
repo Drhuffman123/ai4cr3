@@ -51,12 +51,368 @@ describe Ai4cr3::NeuralNetwork::Backpropagation do
       (example >= -1.0).should eq(true)
     end
   end
-end
 
-# In spec/ai4cr3/neural_network/backpropagation_spec.cr:2:1
-#
-#  2 | require "../../../../src/ai4cr3/neural_network/backpropagation.cr"
-#      ^
-# Error: can't find file '../../../../src/ai4cr3/neural_network/backpropagation.cr'
-# relative to '/home/drhuffman/dev-github-redo/drhuffman123/ai4cr3/
-#   spec/ai4cr3/neural_network/backpropagation_spec.cr'
+  context "activation_param_change" do
+    # TODO
+  end
+
+  # context "activation=" do
+  #   context "when symbol = :sigmoid" do
+  #     it "sets @activation" do
+  #       syms = :sigmoid
+  #       TESTER.activation=(syms).should eq("FOO")
+  #     end
+  #   end
+  #
+  #   context "when symbol = [:sigmoid]" do
+  #     it "sets @activation" do
+  #       syms = [:sigmoid]
+  #       TESTER.activation=(syms).should eq("FOO")
+  #     end
+  #   end
+  # end
+
+  context "propagation_functions" do
+    context "sigmoid" do
+      # SYM : sigmoid, y = -1, deriv = 0.2689414213699951
+      # SYM : sigmoid, y = -0.75, deriv = 0.320821300824607
+      # SYM : sigmoid, y = -0.5, deriv = 0.3775406687981454
+      # SYM : sigmoid, y = -0.25, deriv = 0.43782349911420193
+      # SYM : sigmoid, y = -0.1, deriv = 0.47502081252106
+      # SYM : sigmoid, y = -0.01, deriv = 0.49750002083312506
+      # SYM : sigmoid, y = 0, deriv = 0.5
+      # SYM : sigmoid, y = 0.01, deriv = 0.5024999791668749
+      # SYM : sigmoid, y = 0.1, deriv = 0.52497918747894
+      # SYM : sigmoid, y = 0.25, deriv = 0.5621765008857981
+      # SYM : sigmoid, y = 0.5, deriv = 0.6224593312018546
+      # SYM : sigmoid, y = 0.75, deriv = 0.679178699175393
+      # SYM : sigmoid, y = 1, deriv = 0.7310585786300049
+
+      # SYM : sigmoid, y = -1, deriv = 0.2689414213699951
+      it "case -1.0" do
+        TESTER.activation == [:sigmoid]
+        given_y = -1.0
+        expected_value = 0.2689414213699951
+        (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+        (TESTER.propagation_functions(given_y)).should be_a(Float64)
+        (TESTER.propagation_functions(given_y)).should eq(expected_value)
+      end
+
+      # SYM : sigmoid, y = -0.5, deriv = 0.3775406687981454
+      it "case -0.5" do
+        TESTER.activation == [:sigmoid]
+        given_y = -0.5
+        expected_value = 0.3775406687981454
+        (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+        (TESTER.propagation_functions(given_y)).should be_a(Float64)
+        (TESTER.propagation_functions(given_y)).should eq(expected_value)
+      end
+
+      # SYM : sigmoid, y = 0, deriv = 0.5
+      it "case 0.0" do
+        TESTER.activation == [:sigmoid]
+        given_y = 0.0
+        expected_value = 0.5
+        (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+        (TESTER.propagation_functions(given_y)).should be_a(Float64)
+        (TESTER.propagation_functions(given_y)).should eq(expected_value)
+      end
+
+      # SYM : sigmoid, y = 0.5, deriv = 0.6224593312018546
+      it "case 0.5" do
+        TESTER.activation == [:sigmoid]
+        given_y = 0.5
+        expected_value = 0.6224593312018546
+        (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+        (TESTER.propagation_functions(given_y)).should be_a(Float64)
+        (TESTER.propagation_functions(given_y)).should eq(expected_value)
+      end
+
+      # SYM : sigmoid, y = 1, deriv = 0.7310585786300049
+      it "case 1.0" do
+        TESTER.activation == [:sigmoid]
+        given_y = 1.0
+        expected_value = 0.7310585786300049
+        (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+        (TESTER.propagation_functions(given_y)).should be_a(Float64)
+        (TESTER.propagation_functions(given_y)).should eq(expected_value)
+      end
+    end
+
+    # context "tanh" do
+    # end
+
+    # context "relu" do
+    # end
+
+    # context "softmax" do
+    # end
+  end
+
+  context "derivative_functions" do
+    context "sigmoid" do
+      # SYM : sigmoid, y = -1, deriv = -2
+      it "case -1.0" do
+        TESTER.activation == [:sigmoid]
+        given_y = -1.0
+        expected_value = -2.0
+        (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+        (TESTER.derivative_functions(given_y)).should be_a(Float64)
+        (TESTER.derivative_functions(given_y)).should eq(expected_value)
+      end
+
+      # SYM : sigmoid, y = -0.5, deriv = -0.75
+      it "case -0.5" do
+        TESTER.activation == [:sigmoid]
+        given_y = -0.5
+        expected_value = -0.75
+        (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+        (TESTER.derivative_functions(given_y)).should be_a(Float64)
+        (TESTER.derivative_functions(given_y)).should eq(expected_value)
+      end
+
+      # SYM : sigmoid, y = 0, deriv = 0
+      it "case 0.0" do
+        TESTER.activation == [:sigmoid]
+        given_y = 0.0
+        expected_value = 0.0
+        (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+        (TESTER.derivative_functions(given_y)).should be_a(Float64)
+        (TESTER.derivative_functions(given_y)).should eq(expected_value)
+      end
+
+      # SYM : sigmoid, y = 0.5, deriv = 0.25
+      it "case 0.5" do
+        TESTER.activation == [:sigmoid]
+        given_y = 0.5
+        expected_value = 0.25
+        (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+        (TESTER.derivative_functions(given_y)).should be_a(Float64)
+        (TESTER.derivative_functions(given_y)).should eq(expected_value)
+      end
+
+      # SYM : sigmoid, y = 1, deriv = 0
+      it "case 1.0" do
+        TESTER.activation == [:sigmoid]
+        given_y = 1.0
+        expected_value = 0.0
+        (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+        (TESTER.derivative_functions(given_y)).should be_a(Float64)
+        (TESTER.derivative_functions(given_y)).should eq(expected_value)
+      end
+    end
+
+    context "tanh" do
+      # # SYM : tanh, y = -1, deriv = 0.0
+      # it "case -1.0" do
+      #   TESTER.activation == [:tanh]
+      #   given_y = -1.0
+      #   expected_value = -2.0 # -0.0
+      #   (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+      #   (TESTER.derivative_functions(given_y)).should be_a(Float64)
+      #   (TESTER.derivative_functions(given_y)).should eq(expected_value)
+      # end
+
+      # # SYM : tanh, y = -0.5, deriv = 0.75
+      # it "case -0.5" do
+      #   TESTER.activation == [:tanh]
+      #   given_y = -0.5
+      #   expected_value = -0.75
+      #   (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+      #   (TESTER.derivative_functions(given_y)).should be_a(Float64)
+      #   (TESTER.derivative_functions(given_y)).should eq(expected_value)
+      # end
+
+      # # SYM : tanh, y = 0, deriv = 1.0
+      # it "case 0.0" do
+      #   TESTER.activation == [:tanh]
+      #   given_y = 0.0
+      #   expected_value = 0.0
+      #   (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+      #   (TESTER.derivative_functions(given_y)).should be_a(Float64)
+      #   (TESTER.derivative_functions(given_y)).should eq(expected_value)
+      # end
+
+      # # SYM : tanh, y = 0.5, deriv = 0.75
+      # it "case 0.5" do
+      #   TESTER.activation == [:tanh]
+      #   given_y = 0.5
+      #   expected_value = 0.25 # 0.75
+      #   (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+      #   (TESTER.derivative_functions(given_y)).should be_a(Float64)
+      #   (TESTER.derivative_functions(given_y)).should eq(expected_value)
+      # end
+
+      # # SYM : tanh, y = 1, deriv = 0.0
+      # it "case 1.0" do
+      #   TESTER.activation == [:tanh]
+      #   given_y = 1.0
+      #   expected_value = 0.0
+      #   (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+      #   (TESTER.derivative_functions(given_y)).should be_a(Float64)
+      #   (TESTER.derivative_functions(given_y)).should eq(expected_value)
+      # end
+    end
+
+    context "relu" do
+      # # SYM : relu, y = -1, deriv = 0.0
+      # it "case -1.0" do
+      #   TESTER.activation == [:relu]
+      #   given_y = -1.0
+      #   expected_value = -2.0 # 0.0
+      #   (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+      #   (TESTER.derivative_functions(given_y)).should be_a(Float64)
+      #   (TESTER.derivative_functions(given_y)).should eq(expected_value)
+      # end
+
+      # # SYM : relu, y = -0.5, deriv = 0.0
+      # it "case -0.5" do
+      #   TESTER.activation == [:relu]
+      #   given_y = -0.5
+      #   expected_value = -0.75 # 0.0
+      #   (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+      #   (TESTER.derivative_functions(given_y)).should be_a(Float64)
+      #   (TESTER.derivative_functions(given_y)).should eq(expected_value)
+      # end
+
+      # # SYM : relu, y = 0, deriv = 0.0
+      # it "case 0.0" do
+      #   TESTER.activation == [:relu]
+      #   given_y = 0.0
+      #   expected_value = 0.0
+      #   (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+      #   (TESTER.derivative_functions(given_y)).should be_a(Float64)
+      #   (TESTER.derivative_functions(given_y)).should eq(expected_value)
+      # end
+
+      # # # SYM : relu, y = 0.5, deriv = 1.0
+      # it "case 0.5" do
+      #   TESTER.activation == [:relu]
+      #   given_y = 0.5
+      #   expected_value = 0.25 # 1.0
+      #   (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+      #   (TESTER.derivative_functions(given_y)).should be_a(Float64)
+      #   (TESTER.derivative_functions(given_y)).should eq(expected_value)
+      # end
+
+      # # SYM : relu, y = 1, deriv = 1.0
+      # it "case 1.0" do
+      #   TESTER.activation == [:relu]
+      #   given_y = 1.0
+      #   expected_value = 0.0 # 1.0
+      #   (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+      #   (TESTER.derivative_functions(given_y)).should be_a(Float64)
+      #   (TESTER.derivative_functions(given_y)).should eq(expected_value)
+      # end
+    end
+
+    # it "softmax" do
+    #   TODO
+    # end
+  end
+
+  context "activation_method" do
+    # TODO
+  end
+
+  context "activation" do
+    it "if @activation.is_a?(Array)" do
+      TESTER.activation == [:sigmoid]
+    end
+
+    it "if @set_by_loss || (@loss_function == :cross_entropy && @activation_overridden)" do
+      TESTER.activation == [:sigmoid]
+    end
+
+    it "else" do
+    end
+  end
+
+  context "weight_init" do
+    # TODO
+  end
+
+  context "initial_weight_function" do
+    # TODO
+  end
+
+  context "loss_function" do
+    # TODO
+  end
+
+  context "eval" do
+    # TODO
+  end
+
+  context "eval_result" do
+    # TODO
+  end
+
+  context "train" do
+    # TODO
+  end
+
+  context "train_batch" do
+    # TODO
+  end
+
+  context "train_epochs" do
+    # TODO
+  end
+
+  context "init_network" do
+    # TODO
+  end
+
+  context "backpropagate" do
+    # TODO
+  end
+
+  context "feedforward" do
+    # TODO
+  end
+
+  context "init_activation_nodes" do
+    # TODO
+  end
+
+  context "init_weights" do
+    # TODO
+  end
+
+  context "init_last_changes" do
+    # TODO
+  end
+
+  context "init_weights" do
+    # TODO
+  end
+
+  context "calculate_output_deltas" do
+    # TODO
+  end
+
+  context "calculate_internal_deltas" do
+    # TODO
+  end
+
+  context "update_weights" do
+    # TODO
+  end
+
+  context "calculate_error" do
+    # TODO
+  end
+
+  context "calculate_loss" do
+    # TODO
+  end
+
+  context "check_input_dimension" do
+    # TODO
+  end
+
+  context "check_output_dimension" do
+    # TODO
+  end
+end

@@ -1,16 +1,12 @@
 # (re-)Ported from:       https://github.com/SergioFierens/ai4r
 
-# require "../data/parameterizable"
-# require "./activation_functions"
-# require "./weight_initializations"
-
 module Ai4cr3
   module NeuralNetwork
     class Backpropagation
       # include Ai4r::Data::Parameterizable
 
       property structure : Array(Int32)
-      property activation : Array(Symbol) # one per structure layer
+      property activation : Array(Symbol) | Symbol # one per structure layer
       property weights : Array(Array(Float64))
       property activation_nodes : Array(Array(Float64))
       property last_changes : Array(Array(Float64))
@@ -21,15 +17,17 @@ module Ai4cr3
       # layer except the input layer).
       # @param symbols [Object]
       # @return [Object]
-      def activation=(symbols)
-        symbols = [symbols] unless symbols.is_a?(Array)
-        layer_count = @structure.size - 1
-        if symbols.size == 1
-          symbols = Array.new(layer_count, symbols.first)
-        elsif symbols.size != layer_count
-          raise ArgumentError.new("Activation array size must match number of layers (#{layer_count})")
-        end
-        @activation = symbols
+      # def activation=(symbols)
+      # Other than 'sigmoid', the others are getting errors, so we'll just use 'sigmoid' (as default and only option for now)
+      def activation_param_change(symbols)
+        # symbols = [symbols] unless symbols.is_a?(Array)
+        # layer_count = @structure.size - 1
+        # if symbols.size == 1
+        #   symbols = Array.new(layer_count, symbols.first)
+        # elsif symbols.size != layer_count
+        #   raise ArgumentError.new("Activation array size must match number of layers (#{layer_count})")
+        # end
+        # @activation = symbols
         # @propagation_functions = @activation.map do |a|
         #   # Ai4r::NeuralNetwork::ActivationFunctions::FUNCTIONS[a] ||
         #   #  Ai4r::NeuralNetwork::ActivationFunctions::FUNCTIONS[:sigmoid]
@@ -40,45 +38,64 @@ module Ai4cr3
         # end
       end
 
+      # Other than 'sigmoid', the others are getting errors, so we'll just use 'sigmoid' (as default and only option for now)
       def propagation_functions(x)
-        if @activation == :sigmoid
-          1.0 / (1.0 + Math.exp(-x))
-        elsif @activation == :tanh
-          Math.tanh(x)
-        elsif @activation == :relu
-          [x, 0].max
-          # else # :softmax
-          #   max = arr.max
-          #   exps = arr.map { |v| Math.exp(v - max) }
-          #   sum = exps.inject(:+)
-          #   exps.map { |e| e / sum }
-        end
+        # if @activation.first == :sigmoid
+        #   1.0 / (1.0 + Math.exp(-x))
+        #   # elsif @activation.first == :tanh
+        #   #   Math.tanh(x)
+        #   # elsif @activation.first == :relu
+        #   #   [x, 0].max
+        # else
+        #   raise ":tanh and :relu and :softmax not supported yet, particularly #{@activation} (TODO)"
+        #   # else # :softmax
+        #   #   max = arr.max
+        #   #   exps = arr.map { |v| Math.exp(v - max) }
+        #   #   sum = exps.inject(:+)
+        #   #   exps.map { |e| e / sum }
+        # end
+        1.0 / (1.0 + Math.exp(-x))
       end
 
+      # Other than 'sigmoid', the others are getting errors, so we'll just use 'sigmoid' (as default and only option for now)
       def derivative_functions(y)
-        if @activation == :sigmoid
-          y * (1 - y)
-        elsif @activation == :tanh
-          1.0 - (y**2)
-        elsif @activation == :relu
-          y.positive? ? 1.0 : 0.0
-          # else # :softmax
-          #   y * (1 - y)
-        end
+        # if @activation.first == :sigmoid
+        #   y * (1 - y)
+        #   # elsif @activation.first == :tanh
+        #   #   1.0 - (y**2)
+        #   # elsif @activation.first == :relu
+        #   #   y.positive? ? 1.0 : 0.0
+        # else
+        #   raise ":tanh and :relu and :softmax not supported yet (TODO)"
+        #   # else # :softmax
+        #   #   y * (1 - y)
+        # end
+        y * (1 - y)
       end
 
-      # @return [Object]
-      def activation
-        if @activation.is_a?(Array)
-          if @set_by_loss || (@loss_function == :cross_entropy && @activation_overridden)
-            @activation.first
-          else
-            @activation
-          end
-        else
-          @activation
-        end
-      end
+      # Other than 'sigmoid', the others are getting errors, so we'll just use 'sigmoid' (as default and only option for now)
+      # # @return [Object]
+      # def activation_method
+      #   if @activation.is_a?(Array)
+      #     # if @activation.as(Array(Symbol)).nil?
+      #     #   :sigmoid
+      #     # else
+      #     activ = @activation.as(Array(Symbol)).first
+      #     if activ.nil?
+      #       :sigmoid
+      #     else
+      #       activ
+      #     end
+      #     # end
+      #     # if !(@set_by_loss || (@loss_function == :cross_entropy)) # && @activation_overridden))
+      #     #   @activation
+      #     # else
+      #     #   @activation.first
+      #     # end
+      #   else
+      #     @activation
+      #   end
+      # end
 
       # @param symbol [Object]
       # @return [Object]
@@ -102,13 +119,13 @@ module Ai4cr3
       # @param symbol [Object]
       # @return [Object]
       def loss_function=(symbol)
-        @loss_function = symbol
-        return unless symbol == :cross_entropy && !@activation_overridden && !@custom_propagation
+        @loss_function = mse                   # Use 'mse' as default for now. # symbol
+        return unless symbol == :cross_entropy # && !@activation_overridden && !@custom_propagation
 
         @set_by_loss = true
 
         @activation = :softmax
-        @activation_overridden = false
+        # @activation_overridden = false
       end
 
       # Creates a new network specifying the its architecture.
@@ -128,6 +145,8 @@ module Ai4cr3
       # @param weight_init [Object]
       # @return [Object]
       def initialize(network_structure : Array(Int32), activation = [:sigmoid], weight_init = :uniform)
+        @activation = :sigmoid
+
         @structure = Array(Int32).new
         @weights = Array(Array(Float64)).new
         @activation_nodes = Array(Array(Float64)).new
@@ -139,7 +158,7 @@ module Ai4cr3
         @set_by_loss = true
         @activation = activation
 
-        @activation_overridden = (activation != :sigmoid)
+        # @activation_overridden = (activation != :sigmoid)
         @set_by_loss = false
         @disable_bias = false
         @learning_rate = 0.25
@@ -312,34 +331,34 @@ module Ai4cr3
         self
       end
 
-      # Custom serialization. It used to fail trying to serialize because
-      # it uses lambda functions internally, and they cannot be serialized.
-      # Now it does not fail, but if you customize the values of
-      # * initial_weight_function
-      # * propagation_function
-      # * derivative_propagation_function
-      # you must restore their values manually after loading the instance.
-      # @return [Object]
-      protected def marshal_dump
-        [
-          @structure,
-          @disable_bias,
-          @learning_rate,
-          @momentum,
-          @weights,
-          @last_changes,
-          @activation_nodes,
-          @activation,
-        ]
-      end
+      # # Custom serialization. It used to fail trying to serialize because
+      # # it uses lambda functions internally, and they cannot be serialized.
+      # # Now it does not fail, but if you customize the values of
+      # # * initial_weight_function
+      # # * propagation_function
+      # # * derivative_propagation_function
+      # # you must restore their values manually after loading the instance.
+      # # @return [Object]
+      # protected def marshal_dump
+      #   [
+      #     @structure,
+      #     @disable_bias,
+      #     @learning_rate,
+      #     @momentum,
+      #     @weights,
+      #     @last_changes,
+      #     @activation_nodes,
+      #     @activation,
+      #   ]
+      # end
 
-      # @param ary [Object]
-      # @return [Object]
-      protected def marshal_load(ary)
-        @structure, @disable_bias, @learning_rate, @momentum, @weights, @last_changes, @activation_nodes, @activation = ary
-        @weight_init = :uniform
-        @activation = @activation || :sigmoid
-      end
+      # # @param ary [Object]
+      # # @return [Object]
+      # protected def marshal_load(ary)
+      #   @structure, @disable_bias, @learning_rate, @momentum, @weights, @last_changes, @activation_nodes, @activation = ary
+      #   @weight_init = :uniform
+      #   @activation = @activation || :sigmoid
+      # end
 
       # Propagate error backwards
       # @param expected_output_values [Object]
@@ -422,14 +441,15 @@ module Ai4cr3
       protected def calculate_output_deltas(expected_values)
         output_values = @activation_nodes.last
         output_deltas = Array(Array(Float64)).new
-        func = @derivative_functions.last
+        # func = @derivative_functions.last
+        func = derivative_functions.last
         output_values.each_index do |output_index|
-          if @loss_function == :cross_entropy && @activation == :softmax
-            output_deltas << (output_values[output_index] - expected_values[output_index])
-          else
-            error = expected_values[output_index] - output_values[output_index]
-            output_deltas << (func.call(output_values[output_index]) * error)
-          end
+          # if @loss_function == :cross_entropy && @activation == :softmax
+          #   output_deltas << (output_values[output_index] - expected_values[output_index])
+          # else
+          error = expected_values[output_index] - output_values[output_index]
+          output_deltas << (func.call(output_values[output_index]) * error)
+          # end
         end
         @deltas = [output_deltas]
       end
@@ -445,7 +465,8 @@ module Ai4cr3
             @structure[layer_index + 1].times do |k|
               error += prev_deltas[k] * @weights[layer_index][j][k]
             end
-            func = @derivative_functions[layer_index - 1]
+            # func = @derivative_functions[layer_index - 1]
+            func = derivative_functions[layer_index - 1]
             layer_deltas[j] = func.call(@activation_nodes[layer_index][j]) * error
           end
           prev_deltas = layer_deltas
