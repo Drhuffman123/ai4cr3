@@ -6,7 +6,7 @@ module Ai4cr3
       # include Ai4r::Data::Parameterizable
 
       property structure : Array(Int32)
-      property activation : Array(Symbol) # one per structure layer
+      property activation : Array(Symbol) | Symbol # one per structure layer
       property weights : Array(Array(Float64))
       property activation_nodes : Array(Array(Float64))
       property last_changes : Array(Array(Float64))
@@ -18,15 +18,16 @@ module Ai4cr3
       # @param symbols [Object]
       # @return [Object]
       # def activation=(symbols)
+      # Other than 'sigmoid', the others are getting errors, so we'll just use 'sigmoid' (as default and only option for now)
       def activation_param_change(symbols)
-        symbols = [symbols] unless symbols.is_a?(Array)
-        layer_count = @structure.size - 1
-        if symbols.size == 1
-          symbols = Array.new(layer_count, symbols.first)
-        elsif symbols.size != layer_count
-          raise ArgumentError.new("Activation array size must match number of layers (#{layer_count})")
-        end
-        @activation = symbols
+        # symbols = [symbols] unless symbols.is_a?(Array)
+        # layer_count = @structure.size - 1
+        # if symbols.size == 1
+        #   symbols = Array.new(layer_count, symbols.first)
+        # elsif symbols.size != layer_count
+        #   raise ArgumentError.new("Activation array size must match number of layers (#{layer_count})")
+        # end
+        # @activation = symbols
         # @propagation_functions = @activation.map do |a|
         #   # Ai4r::NeuralNetwork::ActivationFunctions::FUNCTIONS[a] ||
         #   #  Ai4r::NeuralNetwork::ActivationFunctions::FUNCTIONS[:sigmoid]
@@ -37,50 +38,64 @@ module Ai4cr3
         # end
       end
 
+      # Other than 'sigmoid', the others are getting errors, so we'll just use 'sigmoid' (as default and only option for now)
       def propagation_functions(x)
-        if @activation.first == :sigmoid
-          1.0 / (1.0 + Math.exp(-x))
-        # elsif @activation.first == :tanh
-        #   Math.tanh(x)
-        # elsif @activation.first == :relu
-        #   [x, 0].max
-        else
-          raise ":tanh and :relu and :softmax not supported yet, particularly #{@activation} (TODO)"
-          # else # :softmax
-          #   max = arr.max
-          #   exps = arr.map { |v| Math.exp(v - max) }
-          #   sum = exps.inject(:+)
-          #   exps.map { |e| e / sum }
-        end
+        # if @activation.first == :sigmoid
+        #   1.0 / (1.0 + Math.exp(-x))
+        #   # elsif @activation.first == :tanh
+        #   #   Math.tanh(x)
+        #   # elsif @activation.first == :relu
+        #   #   [x, 0].max
+        # else
+        #   raise ":tanh and :relu and :softmax not supported yet, particularly #{@activation} (TODO)"
+        #   # else # :softmax
+        #   #   max = arr.max
+        #   #   exps = arr.map { |v| Math.exp(v - max) }
+        #   #   sum = exps.inject(:+)
+        #   #   exps.map { |e| e / sum }
+        # end
+        1.0 / (1.0 + Math.exp(-x))
       end
 
+      # Other than 'sigmoid', the others are getting errors, so we'll just use 'sigmoid' (as default and only option for now)
       def derivative_functions(y)
-        if @activation.first == :sigmoid
-          y * (1 - y)
-        # elsif @activation.first == :tanh
-        #   1.0 - (y**2)
-        # elsif @activation.first == :relu
-        #   y.positive? ? 1.0 : 0.0
-        else
-          raise ":tanh and :relu and :softmax not supported yet (TODO)"
-          # else # :softmax
-          #   y * (1 - y)
-        end
+        # if @activation.first == :sigmoid
+        #   y * (1 - y)
+        #   # elsif @activation.first == :tanh
+        #   #   1.0 - (y**2)
+        #   # elsif @activation.first == :relu
+        #   #   y.positive? ? 1.0 : 0.0
+        # else
+        #   raise ":tanh and :relu and :softmax not supported yet (TODO)"
+        #   # else # :softmax
+        #   #   y * (1 - y)
+        # end
+        y * (1 - y)
       end
 
-
-      # @return [Object]
-      def activation_method
-        if @activation.is_a?(Array)
-          if @set_by_loss || (@loss_function == :cross_entropy && @activation_overridden)
-            @activation.first
-          else
-            @activation
-          end
-        else
-          @activation
-        end
-      end
+      # Other than 'sigmoid', the others are getting errors, so we'll just use 'sigmoid' (as default and only option for now)
+      # # @return [Object]
+      # def activation_method
+      #   if @activation.is_a?(Array)
+      #     # if @activation.as(Array(Symbol)).nil?
+      #     #   :sigmoid
+      #     # else
+      #     activ = @activation.as(Array(Symbol)).first
+      #     if activ.nil?
+      #       :sigmoid
+      #     else
+      #       activ
+      #     end
+      #     # end
+      #     # if !(@set_by_loss || (@loss_function == :cross_entropy)) # && @activation_overridden))
+      #     #   @activation
+      #     # else
+      #     #   @activation.first
+      #     # end
+      #   else
+      #     @activation
+      #   end
+      # end
 
       # @param symbol [Object]
       # @return [Object]
@@ -104,13 +119,13 @@ module Ai4cr3
       # @param symbol [Object]
       # @return [Object]
       def loss_function=(symbol)
-        @loss_function = symbol
-        return unless symbol == :cross_entropy && !@activation_overridden && !@custom_propagation
+        @loss_function = mse # Use 'mse' as default for now. # symbol
+        return unless symbol == :cross_entropy # && !@activation_overridden && !@custom_propagation
 
         @set_by_loss = true
 
         @activation = :softmax
-        @activation_overridden = false
+        # @activation_overridden = false
       end
 
       # Creates a new network specifying the its architecture.
@@ -130,6 +145,8 @@ module Ai4cr3
       # @param weight_init [Object]
       # @return [Object]
       def initialize(network_structure : Array(Int32), activation = [:sigmoid], weight_init = :uniform)
+        @activation = :sigmoid
+
         @structure = Array(Int32).new
         @weights = Array(Array(Float64)).new
         @activation_nodes = Array(Array(Float64)).new
@@ -139,9 +156,9 @@ module Ai4cr3
         @weight_init = weight_init
         @custom_propagation = false
         @set_by_loss = true
-        @activation = activation_method
+        @activation = activation
 
-        @activation_overridden = (activation != :sigmoid)
+        # @activation_overridden = (activation != :sigmoid)
         @set_by_loss = false
         @disable_bias = false
         @learning_rate = 0.25
@@ -427,12 +444,12 @@ module Ai4cr3
         # func = @derivative_functions.last
         func = derivative_functions.last
         output_values.each_index do |output_index|
-          if @loss_function == :cross_entropy && @activation == :softmax
-            output_deltas << (output_values[output_index] - expected_values[output_index])
-          else
+          # if @loss_function == :cross_entropy && @activation == :softmax
+          #   output_deltas << (output_values[output_index] - expected_values[output_index])
+          # else
             error = expected_values[output_index] - output_values[output_index]
             output_deltas << (func.call(output_values[output_index]) * error)
-          end
+          # end
         end
         @deltas = [output_deltas]
       end

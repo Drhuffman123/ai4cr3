@@ -63,7 +63,7 @@ describe Ai4cr3::NeuralNetwork::Backpropagation do
   #       TESTER.activation=(syms).should eq("FOO")
   #     end
   #   end
-  # 
+  #
   #   context "when symbol = [:sigmoid]" do
   #     it "sets @activation" do
   #       syms = [:sigmoid]
@@ -289,7 +289,7 @@ describe Ai4cr3::NeuralNetwork::Backpropagation do
       # it "case 0.5" do
       #   TESTER.activation == [:relu]
       #   given_y = 0.5
-      #   expected_value = 0.25 # 1.0 
+      #   expected_value = 0.25 # 1.0
       #   (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
       #   (TESTER.derivative_functions(given_y)).should be_a(Float64)
       #   (TESTER.derivative_functions(given_y)).should eq(expected_value)
@@ -325,7 +325,6 @@ describe Ai4cr3::NeuralNetwork::Backpropagation do
     end
 
     it "else" do
-      
     end
   end
 
@@ -417,4 +416,3 @@ describe Ai4cr3::NeuralNetwork::Backpropagation do
     # TODO
   end
 end
-
