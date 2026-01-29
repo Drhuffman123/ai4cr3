@@ -119,7 +119,7 @@ module Ai4cr3
       # @param symbol [Object]
       # @return [Object]
       def loss_function=(symbol)
-        @loss_function = mse # Use 'mse' as default for now. # symbol
+        @loss_function = mse                   # Use 'mse' as default for now. # symbol
         return unless symbol == :cross_entropy # && !@activation_overridden && !@custom_propagation
 
         @set_by_loss = true
@@ -447,8 +447,8 @@ module Ai4cr3
           # if @loss_function == :cross_entropy && @activation == :softmax
           #   output_deltas << (output_values[output_index] - expected_values[output_index])
           # else
-            error = expected_values[output_index] - output_values[output_index]
-            output_deltas << (func.call(output_values[output_index]) * error)
+          error = expected_values[output_index] - output_values[output_index]
+          output_deltas << (func.call(output_values[output_index]) * error)
           # end
         end
         @deltas = [output_deltas]
