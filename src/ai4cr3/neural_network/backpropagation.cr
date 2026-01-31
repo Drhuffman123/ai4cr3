@@ -1,16 +1,85 @@
 # (re-)Ported from:       https://github.com/SergioFierens/ai4r
 
+class IOException < Exception
+  def initialize(@structure : Array(Int32), @inputs : Array(Float64), @outputs : Array(Float64))
+  end
+
+  def to_s(io : IO) : Nil
+    io << "Wrong number of inputs and outputs. Expected (inputs): #{@structure.first}, received (inputs): #{@inputs}, Expected (outputs): #{@structure.last}, received (outputs): #{@outputs}."
+  end
+end
+
+class InputsException < Exception
+  def initialize(@structure_first : Int32, @inputs : Array(Float64))
+  end
+
+  def to_s(io : IO) : Nil
+    io << "Wrong number of inputs. Expected: #{@structure_first}, received: #{@inputs}."
+  end
+end
+
+class OutputsException < Exception
+  def initialize(@structure_last : Int32, @inputs : Array(Float64))
+  end
+
+  def to_s(io : IO) : Nil
+    io << "Wrong number of outputs. Expected: #{@structure_last}, received: #{@inputs}."
+  end
+end
+
 module Ai4cr3
   module NeuralNetwork
     class Backpropagation
       # include Ai4r::Data::Parameterizable
 
       property structure : Array(Int32)
-      property activation : Array(Symbol) | Symbol # one per structure layer
-      property weights : Array(Array(Float64))
+      # property activation : Array(Symbol) | Symbol # one per structure layer
+      property weights : Array(Array(Array(Float64)))
       property activation_nodes : Array(Array(Float64))
-      property last_changes : Array(Array(Float64))
-      property weight_init : Symbol
+      property last_changes : Array(Array(Array(Float64)))
+      property deltas : Array(Array(Float64)) = [[0.0]]
+      property disable_bias = false
+
+      # property weight_init : Symbol
+
+      # Creates a new network specifying the its architecture.
+      # E.g.
+      #
+      #   net = Backpropagation.new([4, 3, 2])  # 4 inputs
+      #                                         # 1 hidden layer with 3 neurons,
+      #                                         # 2 outputs
+      #   net = Backpropagation.new([2, 3, 3, 4])   # 2 inputs
+      #                                             # 2 hidden layer with 3 neurons each,
+      #                                             # 4 outputs
+      #   net = Backpropagation.new([2, 1])   # 2 inputs
+      #                                       # No hidden layer
+      #                                       # 1 output
+      # @param network_structure [Object]
+      # @param activation [Object]
+      # # @param weight_init [Object]
+      # @return [Object]
+      def initialize(network_structure : Array(Int32), activation = [:sigmoid]) # , weight_init = :uniform)
+        # @activation = :sigmoid # DEFAULT for now
+
+        @structure = Array(Int32).new
+        @weights = Array(Array(Array(Float64))).new
+        @activation_nodes = Array(Array(Float64)).new
+        @last_changes = Array(Array(Array(Float64))).new
+
+        @structure = network_structure
+        # @weight_init = weight_init
+        @custom_propagation = false
+        # @set_by_loss = true
+        # @activation = activation
+
+        # @activation_overridden = (activation != :sigmoid)
+        # @set_by_loss = false
+        @disable_bias = false
+        @learning_rate = 0.25
+        @momentum = 0.1
+        # @loss_function = :mse
+        init_network
+      end
 
       # When the activation parameter changes, update internal lambdas for each
       # layer. Accepts a single symbol or an array of symbols (one for each
@@ -19,27 +88,27 @@ module Ai4cr3
       # @return [Object]
       # def activation=(symbols)
       # Other than 'sigmoid', the others are getting errors, so we'll just use 'sigmoid' (as default and only option for now)
-      def activation_param_change(symbols)
-        # symbols = [symbols] unless symbols.is_a?(Array)
-        # layer_count = @structure.size - 1
-        # if symbols.size == 1
-        #   symbols = Array.new(layer_count, symbols.first)
-        # elsif symbols.size != layer_count
-        #   raise ArgumentError.new("Activation array size must match number of layers (#{layer_count})")
-        # end
-        # @activation = symbols
-        # @propagation_functions = @activation.map do |a|
-        #   # Ai4r::NeuralNetwork::ActivationFunctions::FUNCTIONS[a] ||
-        #   #  Ai4r::NeuralNetwork::ActivationFunctions::FUNCTIONS[:sigmoid]
-        # end
-        # @derivative_functions = @activation.map do |a|
-        #   # Ai4r::NeuralNetwork::ActivationFunctions::DERIVATIVES[a] ||
-        #   #   Ai4r::NeuralNetwork::ActivationFunctions::DERIVATIVES[:sigmoid]
-        # end
-      end
+      # def activation_param_change(symbols)
+      # symbols = [symbols] unless symbols.is_a?(Array)
+      # layer_count = @structure.size - 1
+      # if symbols.size == 1
+      #   symbols = Array.new(layer_count, symbols.first)
+      # elsif symbols.size != layer_count
+      #   raise ArgumentError.new("Activation array size must match number of layers (#{layer_count})")
+      # end
+      # @activation = symbols
+      # @propagation_functions = @activation.map do |a|
+      #   # Ai4r::NeuralNetwork::ActivationFunctions::FUNCTIONS[a] ||
+      #   #  Ai4r::NeuralNetwork::ActivationFunctions::FUNCTIONS[:sigmoid]
+      # end
+      # @derivative_functions = @activation.map do |a|
+      #   # Ai4r::NeuralNetwork::ActivationFunctions::DERIVATIVES[a] ||
+      #   #   Ai4r::NeuralNetwork::ActivationFunctions::DERIVATIVES[:sigmoid]
+      # end
+      # end
 
       # Other than 'sigmoid', the others are getting errors, so we'll just use 'sigmoid' (as default and only option for now)
-      def propagation_functions(x)
+      def propagation_functions(x : Float64)
         # if @activation.first == :sigmoid
         #   1.0 / (1.0 + Math.exp(-x))
         #   # elsif @activation.first == :tanh
@@ -99,13 +168,12 @@ module Ai4cr3
 
       # @param symbol [Object]
       # @return [Object]
-      def weight_init=(symbol)
-        @weight_init = symbol
-        # @initial_weight_function = initial_weight_function(n, i, j)
-      end
+      # def weight_init=(symbol)
+      #   @weight_init = symbol
+      #   # @initial_weight_function = initial_weight_function(n, i, j)
+      # end
 
       def initial_weight_function # (n, i, j)
-        (rand * 2) - 1
         # case n
         # when :xavier
         #   Ai4r::NeuralNetwork::WeightInitializations.xavier(i,j)
@@ -114,64 +182,27 @@ module Ai4cr3
         # else
         #   Ai4r::NeuralNetwork::WeightInitializations.uniform
         # end
+        (rand * 2) - 1
       end
 
       # @param symbol [Object]
       # @return [Object]
-      def loss_function=(symbol)
-        @loss_function = mse                   # Use 'mse' as default for now. # symbol
-        return unless symbol == :cross_entropy # && !@activation_overridden && !@custom_propagation
-
-        @set_by_loss = true
-
-        @activation = :softmax
-        # @activation_overridden = false
-      end
-
-      # Creates a new network specifying the its architecture.
-      # E.g.
+      # def loss_function=(symbol)
+      #   @loss_function = :mse                   # Use 'mse' as default for now. # symbol
+      #   # return unless symbol == :cross_entropy # && !@activation_overridden && !@custom_propagation
       #
-      #   net = Backpropagation.new([4, 3, 2])  # 4 inputs
-      #                                         # 1 hidden layer with 3 neurons,
-      #                                         # 2 outputs
-      #   net = Backpropagation.new([2, 3, 3, 4])   # 2 inputs
-      #                                             # 2 hidden layer with 3 neurons each,
-      #                                             # 4 outputs
-      #   net = Backpropagation.new([2, 1])   # 2 inputs
-      #                                       # No hidden layer
-      #                                       # 1 output
-      # @param network_structure [Object]
-      # @param activation [Object]
-      # @param weight_init [Object]
-      # @return [Object]
-      def initialize(network_structure : Array(Int32), activation = [:sigmoid], weight_init = :uniform)
-        @activation = :sigmoid
-
-        @structure = Array(Int32).new
-        @weights = Array(Array(Float64)).new
-        @activation_nodes = Array(Array(Float64)).new
-        @last_changes = Array(Array(Float64)).new
-
-        @structure = network_structure
-        @weight_init = weight_init
-        @custom_propagation = false
-        @set_by_loss = true
-        @activation = activation
-
-        # @activation_overridden = (activation != :sigmoid)
-        @set_by_loss = false
-        @disable_bias = false
-        @learning_rate = 0.25
-        @momentum = 0.1
-        @loss_function = :mse
-      end
+      #   # @set_by_loss = true
+      #
+      #   # @activation = :softmax # DEFAULT for now
+      #   # @activation_overridden = false
+      # end
 
       #     net.eval([25, 32.3, 12.8, 1.5])
       #         # =>  [0.83, 0.03]
       # @param input_values [Object]
       # @return [Object]
-      def eval(input_values)
-        check_input_dimension(input_values.size)
+      def eval(input_values : Array(Float64))
+        check_input_dimension(input_values)
         init_network unless @weights
         feedforward(input_values)
         @activation_nodes.last.clone
@@ -185,7 +216,7 @@ module Ai4cr3
       #         # =>  0
       # @param input_values [Object]
       # @return [Object]
-      def eval_result(input_values)
+      def eval_result(input_values : Array(Float64))
         result = eval(input_values)
         result.index(result.max)
       end
@@ -200,7 +231,7 @@ module Ai4cr3
       # @param inputs [Object]
       # @param outputs [Object]
       # @return [Object]
-      def train(inputs, outputs)
+      def train(inputs : Array(Float64), outputs : Array(Float64))
         eval(inputs)
         backpropagate(outputs)
         calculate_loss(outputs, @activation_nodes.last)
@@ -210,9 +241,10 @@ module Ai4cr3
       # @param batch_inputs [Object]
       # @param batch_outputs [Object]
       # @return [Object]
-      def train_batch(batch_inputs, batch_outputs)
+      def train_batch(batch_inputs : Array(Array(Float64)), batch_outputs : Array(Array(Float64)))
         if batch_inputs.size != batch_outputs.size
-          raise ArgumentError.new("Inputs and outputs size mismatch")
+          raise IOException.new(@structure, batch_inputs, batch_outputs)
+          # raise ArgumentError.new("Inputs and outputs size mismatch")
         end
 
         batch_size = batch_inputs.size
@@ -248,7 +280,7 @@ module Ai4cr3
           @weights[n].each_index do |i|
             @weights[n][i].each_index do |j|
               avg_change = accumulated_changes[n][i][j] / batch_size.to_f
-              @weights[n][i][j] += (learning_rate * avg_change) + (momentum * @last_changes[n][i][j])
+              @weights[n][i][j] += (@learning_rate * avg_change) + (@momentum * @last_changes[n][i][j])
               @last_changes[n][i][j] = avg_change
             end
           end
@@ -262,11 +294,12 @@ module Ai4cr3
       # Use +random_seed+ to make shuffling deterministic.
       # Returns an array with the average loss of each epoch.
       # @return [Object]
-      def train_epochs(data_inputs, data_outputs, epochs : Int32, batch_size = 1,
+      def train_epochs(data_inputs : Array(Float64), data_outputs : Array(Float64), epochs : Int32, batch_size = 1,
                        early_stopping_patience = nil, min_delta = 0.0,
                        shuffle = true, random_seed : Random? = nil, &block)
         if data_inputs.size != data_outputs.size
-          raise ArgumentError.new("Inputs and outputs size mismatch")
+          raise IOException.new(@structure, data_inputs, data_outputs)
+          # raise ArgumentError.new("Inputs and outputs size mismatch")
         end
 
         losses = Array(Array(Float64)).new
@@ -363,8 +396,9 @@ module Ai4cr3
       # Propagate error backwards
       # @param expected_output_values [Object]
       # @return [Object]
-      protected def backpropagate(expected_output_values)
-        check_output_dimension(expected_output_values.size)
+      # protected
+      def backpropagate(expected_output_values : Array(Float64))
+        check_output_dimension(expected_output_values)
         calculate_output_deltas(expected_output_values)
         calculate_internal_deltas
         update_weights
@@ -373,9 +407,11 @@ module Ai4cr3
       # Propagate values forward
       # @param input_values [Object]
       # @return [Object]
-      protected def feedforward(input_values)
+      # protected
+      def feedforward(input_values : Array(Float64))
         input_values.each_index do |input_index|
-          @activation_nodes.first[input_index] = input_values[input_index]
+          # @activation_nodes.first[input_index] = input_values[input_index]
+          @activation_nodes[1][input_index] = input_values[input_index]
         end
         @weights.each_index do |n|
           sums = Array.new(@structure[n + 1], 0.0)
@@ -384,21 +420,21 @@ module Ai4cr3
               sums[j] += (@activation_nodes[n][i] * @weights[n][i][j])
             end
           end
-          if @activation[n] == :softmax
-            # values = @propagation_functions[n].call(sums)
-            values = propagation_functions(n) # TODO: .call(sums)
-            values.each_index { |j| @activation_nodes[n + 1][j] = values[j] }
-          else
-            sums.each_index do |j|
-              @activation_nodes[n + 1][j] = propagation_functions(n) # TODO: .call(sums[j])
-            end
+          # if @activation[n] == :softmax
+          #   # TODO: values = @propagation_functions[n].call(sums)
+          #   values.each_index { |j| @activation_nodes[n + 1][j] = values[j] }
+          # else
+          sums.each_index do |j|
+            @activation_nodes[n + 1][j] = propagation_functions(sums[j]) # TODO: propagation_functions(n).call(sums[j])
           end
+          # end
         end
       end
 
       # Initialize neurons structure.
       # @return [Object]
-      protected def init_activation_nodes
+      # protected
+      def init_activation_nodes
         @activation_nodes = Array.new(@structure.size) do |n|
           Array.new(@structure[n], 1.0)
         end
@@ -438,52 +474,140 @@ module Ai4cr3
       # Calculate deltas for output layer
       # @param expected_values [Object]
       # @return [Object]
-      protected def calculate_output_deltas(expected_values)
+      protected def calculate_output_deltas(expected_values : Array(Float64))
         output_values = @activation_nodes.last
-        output_deltas = Array(Array(Float64)).new
+        output_deltas = Array(Float64).new
         # func = @derivative_functions.last
-        func = derivative_functions.last
+        # func = :sigmoid # derivative_functions.last
         output_values.each_index do |output_index|
           # if @loss_function == :cross_entropy && @activation == :softmax
           #   output_deltas << (output_values[output_index] - expected_values[output_index])
           # else
           error = expected_values[output_index] - output_values[output_index]
-          output_deltas << (func.call(output_values[output_index]) * error)
+          # output_deltas << (func.call(output_values[output_index]) * error)
+          output_deltas << (derivative_functions(output_values[output_index]) * error)
           # end
         end
         @deltas = [output_deltas]
       end
 
+      protected def calculate_internal_deltas_factor(weights, layer_index, j, k) : Float64
+        weights[layer_index.round.to_i][j.round.to_i][k.round.to_i]
+      end
+
+      protected def calculate_internal_deltas_previous(prev_deltas, k) : Float64
+        prev_deltas[k.round.to_i]
+      end
+
       # Calculate deltas for hidden layers
       # @return [Object]
-      protected def calculate_internal_deltas
+      def calculate_internal_deltas
         prev_deltas = @deltas.last
         (@activation_nodes.size - 2).downto(1) do |layer_index|
-          layer_deltas = Array(Array(Float64)).new
+          # layer_deltas = Array(Array(Float64)).new
+          layer_deltas = Array(Float64).new
           @activation_nodes[layer_index].each_index do |j|
             error = 0.0
             @structure[layer_index + 1].times do |k|
               error += prev_deltas[k] * @weights[layer_index][j][k]
             end
             # func = @derivative_functions[layer_index - 1]
-            func = derivative_functions[layer_index - 1]
-            layer_deltas[j] = func.call(@activation_nodes[layer_index][j]) * error
+            # layer_deltas[j] = func.call(@activation_nodes[layer_index][j]) * error
+            # func = @derivative_functions[layer_index - 1]
+
+            puts "derivative_functions(@activation_nodes[layer_index][j]) == @{derivative_functions(@activation_nodes[layer_index][j])}"
+
+            puts "error == #{error}"
+            puts "j, layer_deltas[j] == #{j}, #{layer_deltas[j]}"
+
+            raise "#{derivative_functions(@activation_nodes[layer_index][j]) * error}"
+
+            layer_deltas[j] = derivative_functions(@activation_nodes[layer_index][j]) * error
+
+            # In src/ai4cr3/neural_network/backpropagation.cr:483:87
+            #
+            #  483 | layer_deltas[j] = derivative_functions(@activation_nodes[layer_index][j]) * error
+            #                                                                                  ^
+            # Error: expected argument #2 to 'Array(Array(Float64))#[]=' to be
+            #   Array(Array(Float64)) or Array(Float64), not Float64
+            # TODO: Above!!!
+
           end
           prev_deltas = layer_deltas
           @deltas.unshift(layer_deltas)
         end
       end
 
+      # # Calculate deltas for hidden layers
+      # # @return [Object]
+      # protected def calculate_internal_deltas
+      #   prev_deltas = @deltas.last
+      #   (@activation_nodes.size - 2).downto(1) do |layer_index|
+      #     # vvv TODO: This method needs MUCH review and checks!
+      #     layer_deltas = Array(Array(Float64)).new
+      #     @activation_nodes[layer_index].each_index do |j|
+      #       error = 0.0.to_f64
+      #       @structure[layer_index + 1].times do |k|
+      #         factor = calculate_internal_deltas_factor(@weights, layer_index, j, k)
+      #         previous = calculate_internal_deltas_previous(prev_deltas, k)
+      #         error += previous * factor
+      #       end
+      #       # func = @derivative_functions[layer_index - 1]
+      #       # func = derivative_functions(layer_index - 1)
+      #       # layer_deltas[j] = func.call(@activation_nodes[layer_index][j]) * error
+      #       layer_deltas[j] << derivative_functions(@activation_nodes[layer_index][j]) * error
+      #     end
+      #     prev_deltas = layer_deltas
+      #     @deltas.unshift(layer_deltas[0])
+      #     # ^^^ TODO: This method needs MUCH review and checks!
+      #   end
+      # end
+
+      def update_a_single_weight(n, i, j) # : Float64
+        d = 0.0
+        a = 0.0
+        change = 0.0
+        wd = 0
+        # # j: 0..119
+        # j_min = j if j < j_min
+        # j_max = j if j > j_max
+        # raise "check type mismatch... deltas: #{@deltas.class}, activation_nodes: #{activation_nodes.class}"
+        # raise "check type mismatch... deltas: #{@deltas.last.size}, activation_nodes: #{activation_nodes.last.size}"
+        d = @deltas[n][j]
+        if (@activation_nodes[n].size) -1 < i
+          raise "TODO: WHY!!! Attempted to go out of bounds at i #{i} on @activation_nodes[n]: #{@activation_nodes[n]}"
+        end
+        change = d * a
+        a = @activation_nodes[n][i]
+        # @weights[n][i][j] += ((@learning_rate * change) +
+        #                       (@momentum * @last_changes[n][i][j]))
+        wd = ((@learning_rate * change) +
+              (@momentum * @last_changes[n][i][j]))
+        @weights[n][i][j] += wd.to_f
+        @last_changes[n][i][j] = change.to_f
+      rescue ex
+        # puts "#{ex} #{ex.message}, n: #{n}, i: #{i}, j: #{j}, d: #{d}, a: #{a}, change: #{change}, wd: #{wd}, weights[0][3][0]: #{weights[0][3][0]}, @deltas[0][119]: #{@deltas[0][119]}; n_min: #{n_min}; n_max: #{n_max}"
+        # puts "#{ex}; backtrace: #{ex.backtrace}; n: #{n}; i: #{i}; j: #{j}; a: #{a}; d: #{d}; wd: #{wd}; change: #{change}; @weights[n][i][j]: #{@weights[n][i][j]}; @last_changes[n][i][j]: #{@last_changes[n][i][j]}"
+        puts "#{ex}" # TODO: WHY is this going out of bounds?
+      end
+
       # Update weights after @deltas have been calculated.
       # @return [Object]
-      protected def update_weights
+      # protected
+      def update_weights
+        # n_min = 10; n_max = 0
         (@weights.size - 1).downto(0) do |n|
+          # # n: 0..0
+          # n_min = n if n < n_min
+          # n_max = n if n > n_max
+          # i_min = 10; i_max = 0
           @weights[n].each_index do |i|
+            # # i: 0..3
+            # i_min = i if i < i_min
+            # i_max = i if i > i_max
+            # j_min = 10; j_max = 0
             @weights[n][i].each_index do |j|
-              change = @deltas[n][j] * @activation_nodes[n][i]
-              @weights[n][i][j] += ((learning_rate * change) +
-                                    (momentum * @last_changes[n][i][j]))
-              @last_changes[n][i][j] = change
+              update_a_single_weight(n, i, j)
             end
           end
         end
@@ -493,7 +617,7 @@ module Ai4cr3
       # Error = 0.5 * sum( (expected_value[i] - output_value[i])**2 )
       # @param expected_output [Object]
       # @return [Object]
-      protected def calculate_error(expected_output)
+      protected def calculate_error(expected_output : Array(Float64))
         output_values = @activation_nodes.last
         error = 0.0
         expected_output.each_index do |output_index|
@@ -508,51 +632,45 @@ module Ai4cr3
       # @param expected [Object]
       # @param actual [Object]
       # @return [Object]
-      protected def calculate_loss(expected, actual)
-        case @loss_function
-        when :cross_entropy
-          epsilon = 1e-12
-          loss = 0.0
-          if @activation == :softmax
-            expected.each_index do |i|
-              p = [[actual[i], epsilon].max, 1 - epsilon].min
-              loss -= expected[i] * Math.log(p)
-            end
-          else
-            expected.each_index do |i|
-              p = [[actual[i], epsilon].max, 1 - epsilon].min
-              loss -= (expected[i] * Math.log(p)) + ((1 - expected[i]) * Math.log(1 - p))
-            end
-          end
-          loss
-        else
-          # Mean squared error
-          error = 0.0
-          expected.each_index do |i|
-            error += 0.5 * ((expected[i] - actual[i])**2)
-          end
-          error
+      protected def calculate_loss(expected : Array(Float64), actual : Array(Float64))
+        # case @loss_function
+        # when :cross_entropy
+        #   epsilon = 1e-12
+        #   loss = 0.0
+        #   if @activation == :softmax
+        #     expected.each_index do |i|
+        #       p = [[actual[i], epsilon].max, 1 - epsilon].min
+        #       loss -= expected[i] * Math.log(p)
+        #     end
+        #   else
+        #     expected.each_index do |i|
+        #       p = [[actual[i], epsilon].max, 1 - epsilon].min
+        #       loss -= (expected[i] * Math.log(p)) + ((1 - expected[i]) * Math.log(1 - p))
+        #     end
+        #   end
+        #   loss
+        # else
+        # Mean squared error
+        error = 0.0
+        expected.each_index do |i|
+          error += 0.5 * ((expected[i] - actual[i])**2)
         end
+        error
+        # end
       end
 
       # @param inputs [Object]
       # @return [Object]
-      protected def check_input_dimension(inputs)
-        return unless inputs != @structure.first
-
-        raise ArgumentError.new("Wrong number of inputs. " +
-                                "Expected: #{@structure.first}, " +
-                                "received: #{inputs}.")
+      protected def check_input_dimension(inputs : Array(Float64))
+        return if inputs.size == @structure.first
+        raise InputsException.new(@structure.first, inputs)
       end
 
       # @param outputs [Object]
       # @return [Object]
-      protected def check_output_dimension(outputs)
-        return unless outputs != @structure.last
-
-        raise ArgumentError.new("Wrong number of outputs. " +
-                                "Expected: #{@structure.last}, " +
-                                "received: #{outputs}.")
+      protected def check_output_dimension(outputs : Array(Float64))
+        return unless outputs.size != @structure.last
+        raise OutputsException.new(@structure.last, outputs)
       end
 
       # parameters_info disable_bias: 'If true, the algorithm will not use ' \
