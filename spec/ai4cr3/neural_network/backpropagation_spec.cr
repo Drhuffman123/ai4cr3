@@ -429,7 +429,7 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
 
   context "feedforward" do
     it "returns update_weights" do
-      input_values = [1.0,0.5,0.75]
+      input_values = [1.0, 0.5, 0.75]
       output_values = [
         1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 1
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 2
@@ -446,10 +446,10 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
       ]
       before_activ_nodes = TESTER.activation_nodes
       before_weights = TESTER.weights
-      10.times { 
+      10.times {
         TESTER.train(input_values, output_values)
-        # TESTER.feedforward(input_values)
-      } 
+      # TESTER.feedforward(input_values)
+      }
       after_activ_nodes = TESTER.activation_nodes
       after_weights = TESTER.weights
 

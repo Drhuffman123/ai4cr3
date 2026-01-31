@@ -499,7 +499,6 @@ module Ai4cr3
         prev_deltas[k.round.to_i]
       end
 
-
       def calculate_internal_deltas_structure(j, layer_index, prev_deltas)
         error = 0.0
         @structure[layer_index + 1].times do |k|
@@ -510,7 +509,6 @@ module Ai4cr3
         end
         error
       end
-
 
       # # Calculate deltas for hidden layers
       # # @return [Object]
@@ -588,7 +586,7 @@ module Ai4cr3
         # raise "check type mismatch... deltas: #{@deltas.class}, activation_nodes: #{activation_nodes.class}"
         # raise "check type mismatch... deltas: #{@deltas.last.size}, activation_nodes: #{activation_nodes.last.size}"
         d = @deltas[n][j]
-        if (@activation_nodes[n].size) -1 < i
+        if (@activation_nodes[n].size) - 1 < i
           raise "TODO: WHY!!! Attempted to go out of bounds at i #{i} on @activation_nodes[n]: #{@activation_nodes[n]}"
         end
         change = d * a
