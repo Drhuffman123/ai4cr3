@@ -10,20 +10,20 @@ class IOException < Exception
 end
 
 class InputsException < Exception
-  def initialize(@structure_first : Int32, @inputs : Array(Float64))
+  def initialize(@structure : Array(Int32), @inputs : Array(Float64))
   end
 
   def to_s(io : IO) : Nil
-    io << "Wrong number of inputs. Expected: #{@structure_first}, received: #{@inputs}."
+    io << "Wrong number of inputs. Expected: #{@structure.first}, received: #{@inputs}."
   end
 end
 
 class OutputsException < Exception
-  def initialize(@structure_last : Int32, @inputs : Array(Float64))
+  def initialize(@structure : Array(Int32), @inputs : Array(Float64))
   end
 
   def to_s(io : IO) : Nil
-    io << "Wrong number of outputs. Expected: #{@structure_last}, received: #{@inputs}."
+    io << "Wrong number of outputs. Expected: #{@structure.last}, received: #{@inputs}."
   end
 end
 
@@ -676,14 +676,14 @@ module Ai4cr3
       # @return [Object]
       protected def check_input_dimension(inputs : Array(Float64))
         return if inputs.size == @structure.first
-        raise InputsException.new(@structure.first, inputs)
+        raise InputsException.new(@structure, inputs)
       end
 
       # @param outputs [Object]
       # @return [Object]
       protected def check_output_dimension(outputs : Array(Float64))
         return unless outputs.size != @structure.last
-        raise OutputsException.new(@structure.last, outputs)
+        raise OutputsException.new(@structure, outputs)
       end
 
       # parameters_info disable_bias: 'If true, the algorithm will not use ' \
