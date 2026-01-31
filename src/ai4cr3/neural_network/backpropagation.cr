@@ -446,7 +446,8 @@ module Ai4cr3
       # Initialize the weight arrays using function specified with the
       # initial_weight_function parameter
       # @return [Object]
-      protected def init_weights
+      # protected 
+      def init_weights
         @weights = Array.new(@structure.size - 1) do |i|
           nodes_origin = @activation_nodes[i].size
           nodes_target = @structure[i + 1]
@@ -463,7 +464,8 @@ module Ai4cr3
       # previous training. This method initialize the @last_changes
       # structure with 0 values.
       # @return [Object]
-      protected def init_last_changes
+      # protected 
+      def init_last_changes
         @last_changes = Array.new(@weights.size) do |w|
           Array.new(@weights[w].size) do |i|
             Array.new(@weights[w][i].size, 0.0)
@@ -474,7 +476,8 @@ module Ai4cr3
       # Calculate deltas for output layer
       # @param expected_values [Object]
       # @return [Object]
-      protected def calculate_output_deltas(expected_values : Array(Float64))
+      # protected 
+      def calculate_output_deltas(expected_values : Array(Float64))
         output_values = @activation_nodes.last
         output_deltas = Array(Float64).new
         # func = @derivative_functions.last
@@ -491,11 +494,13 @@ module Ai4cr3
         @deltas = [output_deltas]
       end
 
-      protected def calculate_internal_deltas_factor(weights, layer_index, j, k) : Float64
+      # protected 
+      def calculate_internal_deltas_factor(weights, layer_index, j, k) : Float64
         weights[layer_index.round.to_i][j.round.to_i][k.round.to_i]
       end
 
-      protected def calculate_internal_deltas_previous(prev_deltas, k) : Float64
+      # protected 
+      def calculate_internal_deltas_previous(prev_deltas, k) : Float64
         prev_deltas[k.round.to_i]
       end
 
@@ -531,7 +536,7 @@ module Ai4cr3
 
       # Calculate deltas for hidden layers
       # @return [Object]
-      def calculate_internal_deltas
+      def calculate_internal_deltas : Array(Array(Float64))
         prev_deltas = @deltas.last
         (@activation_nodes.size - 2).downto(1) do |layer_index|
           # layer_deltas = Array(Array(Float64)).new
@@ -548,6 +553,7 @@ module Ai4cr3
           prev_deltas = layer_deltas
           @deltas.unshift(layer_deltas)
         end
+        @deltas
       end
 
       # # Calculate deltas for hidden layers
@@ -575,7 +581,8 @@ module Ai4cr3
       #   end
       # end
 
-      def update_a_single_weight(n, i, j) # : Float64
+      def calc_a_single_weight(n, i, j) # : Float64
+        wb = @weights[n][i][j]
         d = 0.0
         a = 0.0
         change = 0.0
@@ -587,15 +594,20 @@ module Ai4cr3
         # raise "check type mismatch... deltas: #{@deltas.last.size}, activation_nodes: #{activation_nodes.last.size}"
         d = @deltas[n][j]
         if (@activation_nodes[n].size) - 1 < i
-          raise "TODO: WHY!!! Attempted to go out of bounds at i #{i} on @activation_nodes[n]: #{@activation_nodes[n]}"
+          # raise "TODO: WHY!!! Attempted to go out of bounds at i #{i} on @activation_nodes[n]: #{@activation_nodes[n]}"
+          a = 0
+        else
+          a = @activation_nodes[n][i]
         end
         change = d * a
-        a = @activation_nodes[n][i]
         # @weights[n][i][j] += ((@learning_rate * change) +
         #                       (@momentum * @last_changes[n][i][j]))
         wd = ((@learning_rate * change) +
               (@momentum * @last_changes[n][i][j]))
+        # puts "WAIT! .. a: #{a}, d: #{d}, wd: #{wd}, @learning_rate: #{@learning_rate}, change: #{change}, @momentum: #{@momentum}, @last_changes[n][i][j]: #{@last_changes[n][i][j]}"
         @weights[n][i][j] += wd.to_f
+        wa = @weights[n][i][j]
+        # TODO: raise "WEIGHTS! wd: #{wd}; wa: #{wa}; wb: #{wb}" # if wb == wa && wd != 0.0
         @last_changes[n][i][j] = change.to_f
       rescue ex
         # puts "#{ex} #{ex.message}, n: #{n}, i: #{i}, j: #{j}, d: #{d}, a: #{a}, change: #{change}, wd: #{wd}, weights[0][3][0]: #{weights[0][3][0]}, @deltas[0][119]: #{@deltas[0][119]}; n_min: #{n_min}; n_max: #{n_max}"
@@ -619,7 +631,7 @@ module Ai4cr3
             # i_max = i if i > i_max
             # j_min = 10; j_max = 0
             @weights[n][i].each_index do |j|
-              update_a_single_weight(n, i, j)
+              calc_a_single_weight(n, i, j)
             end
           end
         end
@@ -630,7 +642,8 @@ module Ai4cr3
       # Error = 0.5 * sum( (expected_value[i] - output_value[i])**2 )
       # @param expected_output [Object]
       # @return [Object]
-      protected def calculate_error(expected_output : Array(Float64))
+      # protected 
+      def calculate_error(expected_output : Array(Float64))
         output_values = @activation_nodes.last
         error = 0.0
         expected_output.each_index do |output_index|
@@ -645,7 +658,8 @@ module Ai4cr3
       # @param expected [Object]
       # @param actual [Object]
       # @return [Object]
-      protected def calculate_loss(expected : Array(Float64), actual : Array(Float64))
+      # protected 
+      def calculate_loss(expected : Array(Float64), actual : Array(Float64))
         # case @loss_function
         # when :cross_entropy
         #   epsilon = 1e-12
@@ -674,14 +688,16 @@ module Ai4cr3
 
       # @param inputs [Object]
       # @return [Object]
-      protected def check_input_dimension(inputs : Array(Float64))
+      # protected 
+      def check_input_dimension(inputs : Array(Float64))
         return if inputs.size == @structure.first
         raise InputsException.new(@structure, inputs)
       end
 
       # @param outputs [Object]
       # @return [Object]
-      protected def check_output_dimension(outputs : Array(Float64))
+      # protected 
+      def check_output_dimension(outputs : Array(Float64))
         return unless outputs.size != @structure.last
         raise OutputsException.new(@structure, outputs)
       end
