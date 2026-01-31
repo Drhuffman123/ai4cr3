@@ -243,8 +243,8 @@ module Ai4cr3
       # @return [Object]
       def train_batch(batch_inputs : Array(Array(Float64)), batch_outputs : Array(Array(Float64)))
         if batch_inputs.size != batch_outputs.size
-          raise IOException.new(@structure, batch_inputs, batch_outputs)
           # raise ArgumentError.new("Inputs and outputs size mismatch")
+          raise IOException.new(@structure, batch_inputs, batch_outputs)
         end
 
         batch_size = batch_inputs.size
@@ -298,8 +298,8 @@ module Ai4cr3
                        early_stopping_patience = nil, min_delta = 0.0,
                        shuffle = true, random_seed : Random? = nil, &block)
         if data_inputs.size != data_outputs.size
-          raise IOException.new(@structure, data_inputs, data_outputs)
           # raise ArgumentError.new("Inputs and outputs size mismatch")
+          raise IOException.new(@structure, data_inputs, data_outputs)
         end
 
         losses = Array(Array(Float64)).new
@@ -499,6 +499,38 @@ module Ai4cr3
         prev_deltas[k.round.to_i]
       end
 
+
+      def calculate_internal_deltas_structure(j, layer_index, prev_deltas)
+        error = 0.0
+        @structure[layer_index + 1].times do |k|
+          # func = @derivative_functions[layer_index - 1]
+          # layer_deltas[j] = func.call(@activation_nodes[layer_index][j]) * error
+          # raise "#{derivative_functions(@activation_nodes[layer_index][j]) * error}"
+          error += prev_deltas[k] * @weights[layer_index][j][k]
+        end
+        error
+      end
+
+
+      # # Calculate deltas for hidden layers
+      # # @return [Object]
+      # def calculate_internal_deltas
+      #   prev_deltas = @deltas.last
+      #   (@activation_nodes.length - 2).downto(1) do |layer_index|
+      #     layer_deltas = []
+      #     @activation_nodes[layer_index].each_index do |j|
+      #       error = 0.0
+      #       @structure[layer_index + 1].times do |k|
+      #         error += prev_deltas[k] * @weights[layer_index][j][k]
+      #       end
+      #       func = @derivative_functions[layer_index - 1]
+      #       layer_deltas[j] = func.call(@activation_nodes[layer_index][j]) * error
+      #     end
+      #     prev_deltas = layer_deltas
+      #     @deltas.unshift(layer_deltas)
+      #   end
+      # end
+
       # Calculate deltas for hidden layers
       # @return [Object]
       def calculate_internal_deltas
@@ -507,31 +539,13 @@ module Ai4cr3
           # layer_deltas = Array(Array(Float64)).new
           layer_deltas = Array(Float64).new
           @activation_nodes[layer_index].each_index do |j|
-            error = 0.0
-            @structure[layer_index + 1].times do |k|
-              error += prev_deltas[k] * @weights[layer_index][j][k]
-            end
-            # func = @derivative_functions[layer_index - 1]
-            # layer_deltas[j] = func.call(@activation_nodes[layer_index][j]) * error
-            # func = @derivative_functions[layer_index - 1]
-
-            puts "derivative_functions(@activation_nodes[layer_index][j]) == @{derivative_functions(@activation_nodes[layer_index][j])}"
-
-            puts "error == #{error}"
-            puts "j, layer_deltas[j] == #{j}, #{layer_deltas[j]}"
-
-            raise "#{derivative_functions(@activation_nodes[layer_index][j]) * error}"
+            error = calculate_internal_deltas_structure(j, layer_index, prev_deltas)
+            # puts "error == #{error}"
 
             layer_deltas[j] = derivative_functions(@activation_nodes[layer_index][j]) * error
-
-            # In src/ai4cr3/neural_network/backpropagation.cr:483:87
-            #
-            #  483 | layer_deltas[j] = derivative_functions(@activation_nodes[layer_index][j]) * error
-            #                                                                                  ^
             # Error: expected argument #2 to 'Array(Array(Float64))#[]=' to be
             #   Array(Array(Float64)) or Array(Float64), not Float64
             # TODO: Above!!!
-
           end
           prev_deltas = layer_deltas
           @deltas.unshift(layer_deltas)
@@ -594,7 +608,7 @@ module Ai4cr3
       # Update weights after @deltas have been calculated.
       # @return [Object]
       # protected
-      def update_weights
+      def update_weights : Array(Array(Array(Float64)))
         # n_min = 10; n_max = 0
         (@weights.size - 1).downto(0) do |n|
           # # n: 0..0
@@ -611,6 +625,7 @@ module Ai4cr3
             end
           end
         end
+        @weights
       end
 
       # Calculate quadratic error for an expected output value
