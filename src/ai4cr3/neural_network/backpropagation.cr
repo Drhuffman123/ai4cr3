@@ -545,9 +545,9 @@ module Ai4cr3
             error = calculate_internal_deltas_structure(j, layer_index, prev_deltas)
             # puts "error == #{error}"
 
-            layer_deltas[j] = derivative_functions(@activation_nodes[layer_index][j]) * error
-            # Error: expected argument #2 to 'Array(Array(Float64))#[]=' to be
-            #   Array(Array(Float64)) or Array(Float64), not Float64
+            # layer_deltas[j] = derivative_functions(@activation_nodes[layer_index][j]) * error
+            layer_deltas << derivative_functions(@activation_nodes[layer_index][j]) * error
+            # puts "layer_deltas == #{layer_deltas}"
             # TODO: Above!!!
           end
           prev_deltas = layer_deltas
