@@ -39,6 +39,8 @@ module Ai4cr3
       property last_changes : Array(Array(Array(Float64)))
       property deltas : Array(Array(Float64)) = [[0.0]]
       property disable_bias = false
+      property learning_rate = 0.25
+      property momentum = 0.1
 
       # property weight_init : Symbol
 
@@ -75,8 +77,8 @@ module Ai4cr3
         # @activation_overridden = (activation != :sigmoid)
         # @set_by_loss = false
         @disable_bias = false
-        @learning_rate = 0.25
-        @momentum = 0.1
+        # @learning_rate = 0.25
+        # @momentum = 0.1
         # @loss_function = :mse
         init_network
       end
