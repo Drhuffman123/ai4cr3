@@ -875,9 +875,11 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # d
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # e
       ]
-      expected_error = 17.985595028830595
       actual_output = TESTER.calculate_error(expected_output)
       expect(actual_output).to_not eq(0.0)
+      expect(actual_output).to be_a(Float64)
+      is_positive = (actual_output > 0.0)
+      expect(is_positive).to eq(true)
     end
   end
 
@@ -914,7 +916,6 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
       ]
       expected_error = 1.0
       actual_error = TESTER.calculate_loss(expected_output, actual_output)
-      # expect(actual_output).to_not eq(0.0)
       expect(actual_error).to eq(expected_error)
     end
 
@@ -986,20 +987,101 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
       ]
       expected_error = 3.0
       actual_error = TESTER.calculate_loss(expected_output, actual_output)
-      # expect(actual_output).to_not eq(0.0)
       expect(actual_error).to eq(expected_error)
     end
   end
 
-  # context "check_input_dimension" do
-  # it "" do
-  #   input_values = [2.0,1.5,1.75,1.0]
-  #   TESTER.check_input_dimension(input_values)
-  # end
-  # end
+  context "check_input_dimension" do
+    context "correctly sized inputs" do
+      it "should not error (just returns a nil)" do
+        input_values = [2.0,1.5,1.75]
+        result = TESTER.check_input_dimension(input_values)
+        expect(result).to eq(nil)
+      end
+    end
+
+    context "INcorrectly sized inputs" do
+      it "should error (when too few)" do
+        input_values = [2.0]
+        expect_raises(InputsException) do
+          TESTER.check_input_dimension(input_values)
+        end
+      end
+
+      it "should error (when too many)" do
+        input_values = [2.0,1.5,1.75,1.0]
+        expect_raises(InputsException) do
+          TESTER.check_input_dimension(input_values)
+        end
+      end
+    end
+  end
 
   context "check_output_dimension" do
     # TODO
+OutputsException
+    context "correctly sized inputs" do
+      it "should not error (just returns a nil)" do
+        outputs = [
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 1
+          1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 2
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 3
+          0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 4
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 5
+          0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 6
+          1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 7
+          1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # a
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # b
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # c
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # d
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # e
+        ]
+        result = TESTER.check_output_dimension(outputs)
+        expect(result).to eq(nil)
+      end
+    end
+
+    context "INcorrectly sized inputs" do
+      it "should error (when too few)" do
+        outputs = [
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 1
+          1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 2
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 3
+          0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 4
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 5
+          0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 6
+          1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 7
+          1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # a
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # b
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # c
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # d
+        ]
+        expect_raises(OutputsException) do
+          TESTER.check_output_dimension(outputs)
+        end
+      end
+
+      it "should error (when too many)" do
+        outputs = [
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 1
+          1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 2
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 3
+          0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 4
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 5
+          0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 6
+          1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 7
+          1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # a
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # b
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # c
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # d
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # e
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+        ]
+        expect_raises(OutputsException) do
+          TESTER.check_output_dimension(outputs)
+        end
+      end
+    end
   end
 
   context "from_yaml" do
@@ -1025,5 +1107,4 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
       expect(is_file).to be(true)
     end
   end
-
 end
