@@ -1002,6 +1002,18 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
     # TODO
   end
 
+  context "from_yaml" do
+    it "loads the file" do
+      file_path = "a_backprop.yml"
+      TESTER.save(file_path)
+      yml_content = File.read(file_path)
+      new_backprop = Ai4cr3::NeuralNetwork::Backpropagation.from_yaml(yml_content)
+      expect(new_backprop).to be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+      # puts "yml_content: #{yml_content}"
+      # puts "new_backprop: #{new_backprop}"
+    end
+  end
+
   context "save" do
     it "saves the file" do
       file_path = "a_backprop.yml"
@@ -1014,15 +1026,4 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
     end
   end
 
-  context "from_yaml" do
-    it "loads the file" do
-      file_path = "a_backprop.yml"
-      TESTER.save(file_path)
-      yml_content = File.read(file_path)
-      new_backprop = Ai4cr3::NeuralNetwork::Backpropagation.from_yaml(yml_content)
-      expect(new_backprop).to be_a(Ai4cr3::NeuralNetwork::Backpropagation)
-      # puts "yml_content: #{yml_content}"
-      # puts "new_backprop: #{new_backprop}"
-    end
-  end
 end

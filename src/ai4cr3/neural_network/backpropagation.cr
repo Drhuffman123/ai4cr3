@@ -706,13 +706,13 @@ module Ai4cr3
         raise OutputsException.new(@structure, outputs)
       end
 
-      def save(file_path)
-        File.write(file_path, self.to_yaml)
-      end
-
       def from_file(file_path)
         yml_content = File.read(file_path)
         Ai4cr3::NeuralNetwork::Backpropagation.from_yaml(yml_content)
+      end
+
+      def save(file_path)
+        File.write(file_path, self.to_yaml)
       end
 
       # def new(ctx : YAML::PullParser, node : YAML::Nodes::Node)
