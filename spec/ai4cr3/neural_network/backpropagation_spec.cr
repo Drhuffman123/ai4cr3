@@ -994,7 +994,7 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
   context "check_input_dimension" do
     context "correctly sized inputs" do
       it "should not error (just returns a nil)" do
-        input_values = [2.0,1.5,1.75]
+        input_values = [2.0, 1.5, 1.75]
         result = TESTER.check_input_dimension(input_values)
         expect(result).to eq(nil)
       end
@@ -1009,7 +1009,7 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
       end
 
       it "should error (when too many)" do
-        input_values = [2.0,1.5,1.75,1.0]
+        input_values = [2.0, 1.5, 1.75, 1.0]
         expect_raises(InputsException) do
           TESTER.check_input_dimension(input_values)
         end
@@ -1019,7 +1019,7 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
 
   context "check_output_dimension" do
     # TODO
-OutputsException
+    OutputsException
     context "correctly sized inputs" do
       it "should not error (just returns a nil)" do
         outputs = [
@@ -1075,7 +1075,7 @@ OutputsException
           0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # c
           0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # d
           0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # e
-          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
         ]
         expect_raises(OutputsException) do
           TESTER.check_output_dimension(outputs)
