@@ -27,16 +27,19 @@ class OutputsException < Exception
   end
 end
 
+require "yaml"
+
 module Ai4cr3
   module NeuralNetwork
     class Backpropagation
+      include YAML::Serializable
       # include Ai4r::Data::Parameterizable
 
       property structure : Array(Int32)
       # property activation : Array(Symbol) | Symbol # one per structure layer
-      property weights : Array(Array(Array(Float64)))
-      property activation_nodes : Array(Array(Float64))
-      property last_changes : Array(Array(Array(Float64)))
+      property weights : Array(Array(Array(Float64))) = [[[0.0]]]
+      property activation_nodes : Array(Array(Float64)) = [[0.0]]
+      property last_changes : Array(Array(Array(Float64))) = [[[0.0]]]
       property deltas : Array(Array(Float64)) = [[0.0]]
       property disable_bias = false
       property learning_rate = 0.25
@@ -63,12 +66,11 @@ module Ai4cr3
       def initialize(network_structure : Array(Int32), activation = [:sigmoid]) # , weight_init = :uniform)
         # @activation = :sigmoid # DEFAULT for now
 
-        @structure = Array(Int32).new
+        @structure = network_structure
         @weights = Array(Array(Array(Float64))).new
         @activation_nodes = Array(Array(Float64)).new
         @last_changes = Array(Array(Array(Float64))).new
 
-        @structure = network_structure
         # @weight_init = weight_init
         @custom_propagation = false
         # @set_by_loss = true
@@ -448,7 +450,7 @@ module Ai4cr3
       # Initialize the weight arrays using function specified with the
       # initial_weight_function parameter
       # @return [Object]
-      # protected 
+      # protected
       def init_weights
         @weights = Array.new(@structure.size - 1) do |i|
           nodes_origin = @activation_nodes[i].size
@@ -466,7 +468,7 @@ module Ai4cr3
       # previous training. This method initialize the @last_changes
       # structure with 0 values.
       # @return [Object]
-      # protected 
+      # protected
       def init_last_changes
         @last_changes = Array.new(@weights.size) do |w|
           Array.new(@weights[w].size) do |i|
@@ -478,7 +480,7 @@ module Ai4cr3
       # Calculate deltas for output layer
       # @param expected_values [Object]
       # @return [Object]
-      # protected 
+      # protected
       def calculate_output_deltas(expected_values : Array(Float64))
         output_values = @activation_nodes.last
         output_deltas = Array(Float64).new
@@ -496,12 +498,12 @@ module Ai4cr3
         @deltas = [output_deltas]
       end
 
-      # protected 
+      # protected
       def calculate_internal_deltas_factor(weights, layer_index, j, k) : Float64
         weights[layer_index.round.to_i][j.round.to_i][k.round.to_i]
       end
 
-      # protected 
+      # protected
       def calculate_internal_deltas_previous(prev_deltas, k) : Float64
         prev_deltas[k.round.to_i]
       end
@@ -644,7 +646,7 @@ module Ai4cr3
       # Error = 0.5 * sum( (expected_value[i] - output_value[i])**2 )
       # @param expected_output [Object]
       # @return [Object]
-      # protected 
+      # protected
       def calculate_error(expected_output : Array(Float64))
         output_values = @activation_nodes.last
         error = 0.0
@@ -660,7 +662,7 @@ module Ai4cr3
       # @param expected [Object]
       # @param actual [Object]
       # @return [Object]
-      # protected 
+      # protected
       def calculate_loss(expected : Array(Float64), actual : Array(Float64))
         # case @loss_function
         # when :cross_entropy
@@ -690,7 +692,7 @@ module Ai4cr3
 
       # @param inputs [Object]
       # @return [Object]
-      # protected 
+      # protected
       def check_input_dimension(inputs : Array(Float64))
         return if inputs.size == @structure.first
         raise InputsException.new(@structure, inputs)
@@ -698,11 +700,26 @@ module Ai4cr3
 
       # @param outputs [Object]
       # @return [Object]
-      # protected 
+      # protected
       def check_output_dimension(outputs : Array(Float64))
         return unless outputs.size != @structure.last
         raise OutputsException.new(@structure, outputs)
       end
+
+      def save(file_path)
+        File.write(file_path, self.to_yaml)
+      end
+
+      def from_file(file_path)
+        yml_content = File.read(file_path)
+        Ai4cr3::NeuralNetwork::Backpropagation.from_yaml(yml_content)
+      end
+
+      # def new(ctx : YAML::PullParser, node : YAML::Nodes::Node)
+      # end
+
+      # def to_yaml(builder : YAML::Nodes::Builder)
+      # end
 
       # parameters_info disable_bias: 'If true, the algorithm will not use ' \
       #                              'bias nodes. False by default.',
