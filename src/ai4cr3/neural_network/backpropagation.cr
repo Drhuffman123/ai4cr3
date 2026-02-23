@@ -93,22 +93,22 @@ module Ai4cr3
       # def activation=(symbols)
       # Other than 'sigmoid', the others are getting errors, so we'll just use 'sigmoid' (as default and only option for now)
       # def activation_param_change(symbols)
-      # symbols = [symbols] unless symbols.is_a?(Array)
-      # layer_count = @structure.size - 1
-      # if symbols.size == 1
-      #   symbols = Array.new(layer_count, symbols.first)
-      # elsif symbols.size != layer_count
-      #   raise ArgumentError.new("Activation array size must match number of layers (#{layer_count})")
-      # end
-      # @activation = symbols
-      # @propagation_functions = @activation.map do |a|
-      #   # Ai4r::NeuralNetwork::ActivationFunctions::FUNCTIONS[a] ||
-      #   #  Ai4r::NeuralNetwork::ActivationFunctions::FUNCTIONS[:sigmoid]
-      # end
-      # @derivative_functions = @activation.map do |a|
-      #   # Ai4r::NeuralNetwork::ActivationFunctions::DERIVATIVES[a] ||
-      #   #   Ai4r::NeuralNetwork::ActivationFunctions::DERIVATIVES[:sigmoid]
-      # end
+      #   symbols = [symbols] unless symbols.is_a?(Array)
+      #   layer_count = @structure.size - 1
+      #   if symbols.size == 1
+      #     symbols = Array.new(layer_count, symbols.first)
+      #   elsif symbols.size != layer_count
+      #     raise ArgumentError.new("Activation array size must match number of layers (#{layer_count})")
+      #   end
+      #   @activation = symbols
+      #   @propagation_functions = @activation.map do |a|
+      #     # Ai4r::NeuralNetwork::ActivationFunctions::FUNCTIONS[a] ||
+      #     #  Ai4r::NeuralNetwork::ActivationFunctions::FUNCTIONS[:sigmoid]
+      #   end
+      #   @derivative_functions = @activation.map do |a|
+      #     # Ai4r::NeuralNetwork::ActivationFunctions::DERIVATIVES[a] ||
+      #     #   Ai4r::NeuralNetwork::ActivationFunctions::DERIVATIVES[:sigmoid]
+      #   end
       # end
 
       # Other than 'sigmoid', the others are getting errors, so we'll just use 'sigmoid' (as default and only option for now)
@@ -128,6 +128,8 @@ module Ai4cr3
         #   #   exps.map { |e| e / sum }
         # end
         1.0 / (1.0 + Math.exp(-x))
+        # relu:
+        [x, 0].max
       end
 
       # Other than 'sigmoid', the others are getting errors, so we'll just use 'sigmoid' (as default and only option for now)
@@ -144,6 +146,8 @@ module Ai4cr3
         #   #   y * (1 - y)
         # end
         y * (1 - y)
+        # relu:
+        y.positive? ? 1.0 : 0.0
       end
 
       # Other than 'sigmoid', the others are getting errors, so we'll just use 'sigmoid' (as default and only option for now)
