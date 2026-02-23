@@ -61,77 +61,87 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
 
   context "propagation_functions" do
     # context "sigmoid" do
-    # (ONLY sigmoid for now)
-    # SYM : sigmoid , y = -1, deriv = 0.2689414213699951
-    # SYM : sigmoid, y = -0.75, deriv = 0.320821300824607
-    # SYM : sigmoid, y = -0.5, deriv = 0.3775406687981454
-    # SYM : sigmoid, y = -0.25, deriv = 0.43782349911420193
-    # SYM : sigmoid, y = -0.1, deriv = 0.47502081252106
-    # SYM : sigmoid, y = -0.01, deriv = 0.49750002083312506
-    # SYM : sigmoid, y = 0, deriv = 0.5
-    # SYM : sigmoid, y = 0.01, deriv = 0.5024999791668749
-    # SYM : sigmoid, y = 0.1, deriv = 0.52497918747894
-    # SYM : sigmoid, y = 0.25, deriv = 0.5621765008857981
-    # SYM : sigmoid, y = 0.5, deriv = 0.6224593312018546
-    # SYM : sigmoid, y = 0.75, deriv = 0.679178699175393
-    # SYM : sigmoid, y = 1, deriv = 0.7310585786300049
-
-    # SYM : sigmoid, y = -1, deriv = 0.2689414213699951
-    it "case -1.0" do
-      # TESTER.activation == [:sigmoid]
-      given_y = -1.0
-      expected_value = 0.2689414213699951
-      expect(TESTER).to be_a(Ai4cr3::NeuralNetwork::Backpropagation)
-      expect(TESTER.propagation_functions(given_y)).to be_a(Float64)
-      expect(TESTER.propagation_functions(given_y)).to eq(expected_value)
-    end
-
-    # SYM : sigmoid, y = -0.5, deriv = 0.3775406687981454
-    it "case -0.5" do
-      # TESTER.activation == [:sigmoid]
-      given_y = -0.5
-      expected_value = 0.3775406687981454
-      expect(TESTER).to be_a(Ai4cr3::NeuralNetwork::Backpropagation)
-      expect(TESTER.propagation_functions(given_y)).to be_a(Float64)
-      expect(TESTER.propagation_functions(given_y)).to eq(expected_value)
-    end
-
-    # SYM : sigmoid, y = 0, deriv = 0.5
-    it "case 0.0" do
-      # TESTER.activation == [:sigmoid]
-      given_y = 0.0
-      expected_value = 0.5
-      expect(TESTER).to be_a(Ai4cr3::NeuralNetwork::Backpropagation)
-      expect(TESTER.propagation_functions(given_y)).to be_a(Float64)
-      expect(TESTER.propagation_functions(given_y)).to eq(expected_value)
-    end
-
-    # SYM : sigmoid, y = 0.5, deriv = 0.6224593312018546
-    it "case 0.5" do
-      # TESTER.activation == [:sigmoid]
-      given_y = 0.5
-      expected_value = 0.6224593312018546
-      expect(TESTER).to be_a(Ai4cr3::NeuralNetwork::Backpropagation)
-      expect(TESTER.propagation_functions(given_y)).to be_a(Float64)
-      expect(TESTER.propagation_functions(given_y)).to eq(expected_value)
-    end
-
-    # SYM : sigmoid, y = 1, deriv = 0.7310585786300049
-    it "case 1.0" do
-      # TESTER.activation == [:sigmoid]
-      given_y = 1.0
-      expected_value = 0.7310585786300049
-      expect(TESTER).to be_a(Ai4cr3::NeuralNetwork::Backpropagation)
-      expect(TESTER.propagation_functions(given_y)).to be_a(Float64)
-      expect(TESTER.propagation_functions(given_y)).to eq(expected_value)
-    end
+    # # (ONLY sigmoid for now)
+    # # SYM : sigmoid , y = -1, deriv = 0.2689414213699951
+    # # SYM : sigmoid, y = -0.75, deriv = 0.320821300824607
+    # # SYM : sigmoid, y = -0.5, deriv = 0.3775406687981454
+    # # SYM : sigmoid, y = -0.25, deriv = 0.43782349911420193
+    # # SYM : sigmoid, y = -0.1, deriv = 0.47502081252106
+    # # SYM : sigmoid, y = -0.01, deriv = 0.49750002083312506
+    # # SYM : sigmoid, y = 0, deriv = 0.5
+    # # SYM : sigmoid, y = 0.01, deriv = 0.5024999791668749
+    # # SYM : sigmoid, y = 0.1, deriv = 0.52497918747894
+    # # SYM : sigmoid, y = 0.25, deriv = 0.5621765008857981
+    # # SYM : sigmoid, y = 0.5, deriv = 0.6224593312018546
+    # # SYM : sigmoid, y = 0.75, deriv = 0.679178699175393
+    # # SYM : sigmoid, y = 1, deriv = 0.7310585786300049
+    # 
+    #   # SYM : sigmoid, y = -1, deriv = 0.2689414213699951
+    #   it "case -1.0" do
+    #     # TESTER.activation == [:sigmoid]
+    #     given_y = -1.0
+    #     expected_value = 0.2689414213699951
+    #     expect(TESTER).to be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+    #     expect(TESTER.propagation_functions(given_y)).to be_a(Float64)
+    #     expect(TESTER.propagation_functions(given_y)).to eq(expected_value)
+    #   end
+    # 
+    #   # SYM : sigmoid, y = -0.5, deriv = 0.3775406687981454
+    #   it "case -0.5" do
+    #     # TESTER.activation == [:sigmoid]
+    #     given_y = -0.5
+    #     expected_value = 0.3775406687981454
+    #     expect(TESTER).to be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+    #     expect(TESTER.propagation_functions(given_y)).to be_a(Float64)
+    #     expect(TESTER.propagation_functions(given_y)).to eq(expected_value)
+    #   end
+    # 
+    #   # SYM : sigmoid, y = 0, deriv = 0.5
+    #   it "case 0.0" do
+    #     # TESTER.activation == [:sigmoid]
+    #     given_y = 0.0
+    #     expected_value = 0.5
+    #     expect(TESTER).to be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+    #     expect(TESTER.propagation_functions(given_y)).to be_a(Float64)
+    #     expect(TESTER.propagation_functions(given_y)).to eq(expected_value)
+    #   end
+    # 
+    #   # SYM : sigmoid, y = 0.5, deriv = 0.6224593312018546
+    #   it "case 0.5" do
+    #     # TESTER.activation == [:sigmoid]
+    #     given_y = 0.5
+    #     expected_value = 0.6224593312018546
+    #     expect(TESTER).to be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+    #     expect(TESTER.propagation_functions(given_y)).to be_a(Float64)
+    #     expect(TESTER.propagation_functions(given_y)).to eq(expected_value)
+    #   end
+    # 
+    #   # SYM : sigmoid, y = 1, deriv = 0.7310585786300049
+    #   it "case 1.0" do
+    #     # TESTER.activation == [:sigmoid]
+    #     given_y = 1.0
+    #     expected_value = 0.7310585786300049
+    #     expect(TESTER).to be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+    #     expect(TESTER.propagation_functions(given_y)).to be_a(Float64)
+    #     expect(TESTER.propagation_functions(given_y)).to eq(expected_value)
+    #   end
     # end
 
     # context "tanh" do
     # end
 
-    # context "relu" do
-    # end
+    context "relu" do
+      context "propagation_functions" do
+        it "case 1.0" do
+          # TESTER.activation == [:sigmoid]
+          given_y = 1.0
+          expected_value = 1.0
+          expect(TESTER).to be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+          expect(TESTER.propagation_functions(given_y)).to be_a(Float64)
+          expect(TESTER.propagation_functions(given_y)).to eq(expected_value)
+        end
+      end
+    end
 
     # context "softmax" do
     # end
@@ -141,14 +151,14 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
     # context "sigmoid" do
     # (ONLY sigmoid for now)
     # SYM : sigmoid, y = -1, deriv = -2
-    it "case -1.0" do
-      # TESTER.activation == [:sigmoid]
-      given_y = -1.0
-      expected_value = -2.0
-      expect(TESTER).to be_a(Ai4cr3::NeuralNetwork::Backpropagation)
-      expect(TESTER.derivative_functions(given_y)).to be_a(Float64)
-      expect(TESTER.derivative_functions(given_y)).to eq(expected_value)
-    end
+    # it "case -1.0" do
+    #   # TESTER.activation == [:sigmoid]
+    #   given_y = -1.0
+    #   expected_value = -2.0
+    #   expect(TESTER).to be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+    #   expect(TESTER.derivative_functions(given_y)).to be_a(Float64)
+    #   expect(TESTER.derivative_functions(given_y)).to eq(expected_value)
+    # end
 
     # SYM : sigmoid, y = -0.5, deriv = -0.75
     it "case -0.5" do
@@ -242,16 +252,16 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
     # end
     # end
 
-    # context "relu" do
-    # # SYM : relu, y = -1, deriv = 0.0
-    # it "case -1.0" do
-    #   # TESTER.activation == [:relu]
-    #   given_y = -1.0
-    #   expected_value = -2.0 # 0.0
-    #   (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
-    #   (TESTER.derivative_functions(given_y)).should be_a(Float64)
-    #   (TESTER.derivative_functions(given_y)).should eq(expected_value)
-    # end
+    context "relu" do
+    # SYM : relu, y = -1, deriv = 0.0
+      it "case -1.0" do
+        # TESTER.activation == [:relu]
+        given_y = -1.0
+        expected_value = -2.0 # 0.0
+        (TESTER).should be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+        (TESTER.derivative_functions(given_y)).should be_a(Float64)
+        (TESTER.derivative_functions(given_y)).should eq(expected_value)
+      end
 
     # # SYM : relu, y = -0.5, deriv = 0.0
     # it "case -0.5" do
@@ -293,6 +303,7 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
     #   (TESTER.derivative_functions(given_y)).should eq(expected_value)
     # end
     # end
+    end
 
     # it "softmax" do
     #   TODO

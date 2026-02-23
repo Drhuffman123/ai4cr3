@@ -129,7 +129,7 @@ module Ai4cr3
         # end
         1.0 / (1.0 + Math.exp(-x))
         # relu:
-        [x, 0].max
+        [x, 0].max.to_f
       end
 
       # Other than 'sigmoid', the others are getting errors, so we'll just use 'sigmoid' (as default and only option for now)
