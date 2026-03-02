@@ -917,6 +917,43 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
       expected_error = 1.0
       actual_error = TESTER.calculate_loss(expected_output, actual_output)
       expect(actual_error).to eq(expected_error)
+      expect(TESTER.prev_error).to eq(expected_error)
+    end
+
+    it "sets @prev_error" do
+      input_values = [2.0, 1.5, 1.75]
+      expected_output = [
+        1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 1
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 2
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 3
+        1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 4
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 5
+        1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 6
+        1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 7
+        1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # a
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # b
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # c
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # d
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # e
+      ]
+      actual_output = [
+        0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 1
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 2
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 3
+        1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 4
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 5
+        1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 6
+        1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 7
+        1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # a
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # b
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # c
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # d
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # e
+      ]
+      expected_error = 1.0
+      actual_error = TESTER.calculate_loss(expected_output, actual_output)
+      expect(actual_error).to eq(expected_error)
+      expect(TESTER.prev_error).to eq(expected_error)
     end
 
     it "returns the error" do
@@ -953,6 +990,7 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
       actual_error = TESTER.calculate_loss(expected_output, actual_output)
       # expect(actual_output).to_not eq(0.0)
       expect(actual_error).to eq(expected_error)
+      expect(TESTER.prev_error).to eq(expected_error)
     end
 
     it "returns the error" do
@@ -988,6 +1026,7 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
       expected_error = 3.0
       actual_error = TESTER.calculate_loss(expected_output, actual_output)
       expect(actual_error).to eq(expected_error)
+      expect(TESTER.prev_error).to eq(expected_error)
     end
   end
 

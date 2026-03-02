@@ -44,6 +44,7 @@ module Ai4cr3
       property disable_bias = false
       property learning_rate = 0.25
       property momentum = 0.1
+      property prev_error = 0.0
 
       # property weight_init : Symbol
 
@@ -686,7 +687,7 @@ module Ai4cr3
         expected.each_index do |i|
           error += 0.5 * ((expected[i] - actual[i])**2)
         end
-        error
+        @prev_error = error
         # end
       end
 
