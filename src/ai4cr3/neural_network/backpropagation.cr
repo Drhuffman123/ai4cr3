@@ -1,4 +1,5 @@
 # (re-)Ported from:       https://github.com/SergioFierens/ai4r
+require "wait_group"
 
 class IOException < Exception
   def initialize(@structure : Array(Int32), @inputs : Array(Float64), @outputs : Array(Float64))
@@ -35,6 +36,13 @@ module Ai4cr3
       include YAML::Serializable
       # include Ai4r::Data::Parameterizable
 
+      property consumers : Fiber::ExecutionContext::Parallel
+      property channel : Channel
+      property wg : WaitGroup
+      property result : Atomic
+
+
+
       property structure : Array(Int32)
       # property activation : Array(Symbol) | Symbol # one per structure layer
       property weights : Array(Array(Array(Float64))) = [[[0.0]]]
@@ -67,6 +75,11 @@ module Ai4cr3
       def initialize(network_structure : Array(Int32), activation = [:sigmoid]) # , weight_init = :uniform)
         # @activation = :sigmoid # DEFAULT for now
 
+        @consumers = Fiber::ExecutionContext::Parallel.new("consumers", 16)
+        @channel = Channel(Int32).new(64)
+        @wg = WaitGroup.new(32)
+        @result = Atomic.new(0)
+
         @structure = network_structure
         @weights = Array(Array(Array(Float64))).new
         @activation_nodes = Array(Array(Float64)).new
@@ -83,6 +96,7 @@ module Ai4cr3
         # @learning_rate = 0.25
         # @momentum = 0.1
         # @loss_function = :mse
+
         init_network
       end
 
@@ -544,20 +558,33 @@ module Ai4cr3
       def calculate_internal_deltas : Array(Array(Float64))
         prev_deltas = @deltas.last
         (@activation_nodes.size - 2).downto(1) do |layer_index|
-          # layer_deltas = Array(Array(Float64)).new
-          layer_deltas = Array(Float64).new
-          @activation_nodes[layer_index].each_index do |j|
-            error = calculate_internal_deltas_structure(j, layer_index, prev_deltas)
-            # puts "error == #{error}"
+          @consumers.spawn do
+            # layer_deltas = Array(Array(Float64)).new
+            layer_deltas = Array(Float64).new
+            @activation_nodes[layer_index].each_index do |j|
+              error = calculate_internal_deltas_structure(j, layer_index, prev_deltas)
+              # puts "error == #{error}"
 
-            # layer_deltas[j] = derivative_functions(@activation_nodes[layer_index][j]) * error
-            layer_deltas << derivative_functions(@activation_nodes[layer_index][j]) * error
-            # puts "layer_deltas == #{layer_deltas}"
-            # TODO: Above!!!
+              # layer_deltas[j] = derivative_functions(@activation_nodes[layer_index][j]) * error
+              layer_deltas << derivative_functions(@activation_nodes[layer_index][j]) * error
+              # puts "layer_deltas == #{layer_deltas}"
+              # TODO: Above!!!
+            end
+          ensure
+            # collect the threads
+            @wg.done
           end
+
+          # 1.times { |i| channel.send(i) }
+          @channel.close
+
           prev_deltas = layer_deltas
           @deltas.unshift(layer_deltas)
         end
+
+        # wait for all workers to be done
+        @wg.wait
+
         @deltas
       end
 
@@ -739,6 +766,65 @@ module Ai4cr3
       #                           'momentum.',
       #                 loss_function: 'Loss function used when training (:mse or ' \
       #                                ':cross_entropy). Default: :mse'
+
+      def fibered
+        # BELOW: mimic the below in the above code loops:
+        128.times do
+          @consumers.spawn do
+            while value = @channel.receive?
+              # DO PROCESS HERE:
+              # e.g.:
+              @result.add(value)
+              # But, lets do this...:
+              # ....
+            end
+          ensure
+            @wg.done
+          end
+        end
+
+        # 10240000.times
+        1024000.times { |i| @channel.send(i) }
+        @channel.close
+        #### .. FIBERIZE the parts
+
+        # wait for all workers to be done
+        @wg.wait
+
+        @result.get
+      end
+
+      # def fiberize_example
+      #   #### FIBERIZE!
+      #   # consumers = Fiber::ExecutionContext::Parallel.new("consumers", 16)
+      #   # channel = Channel(Int32).new(64)
+      #   # wg = WaitGroup.new(32)
+
+      #   # TODO: result = Atomic.new(0)
+
+      #   #### FIBERIZE the parts:
+      #   32.times do
+      #     consumers.spawn do
+      #       xxx.new
+      #       # while value = channel.receive?
+      #       #   result.add(value)
+      #       # end
+      #     ensure
+      #       wg.done
+      #     end
+      #   end
+
+      #   # 10240000.times
+      #   1024000.times { |i| channel.send(i) }
+      #   channel.close
+      #   #### .. FIBERIZE the parts
+
+      #  # wait for all workers to be done
+      #  wg.wait
+
+      #   p result.get # => 523776
+      #   #### .. FIBERIZE!
+      # end
     end
   end
 end
