@@ -270,12 +270,15 @@ module Ai4cr3
           calculate_internal_deltas
 
           (@weights.size - 1).downto(0) do |n|
-            @weights[n].each_index do |i|
-              @weights[n][i].each_index do |j|
-                change = @deltas[n][j] * @activation_nodes[n][i]
-                accumulated_changes[n][i][j] += change
+            spawn do
+              @weights[n].each_index do |i|
+                @weights[n][i].each_index do |j|
+                  change = @deltas[n][j] * @activation_nodes[n][i]
+                  accumulated_changes[n][i][j] += change
+                end
               end
             end
+            
           end
 
           sum_error += calculate_loss(outputs, @activation_nodes.last)
@@ -419,21 +422,23 @@ module Ai4cr3
           @activation_nodes[1][input_index] = input_values[input_index]
         end
         @weights.each_index do |n|
-          sums = Array.new(@structure[n + 1], 0.0)
-          @structure[n + 1].times do |j|
-            @activation_nodes[n].each_index do |i|
-              sums[j] += (@activation_nodes[n][i] * @weights[n][i][j])
+          spawn do
+            sums = Array.new(@structure[n + 1], 0.0)
+            @structure[n + 1].times do |j|
+              @activation_nodes[n].each_index do |i|
+                sums[j] += (@activation_nodes[n][i] * @weights[n][i][j])
+              end
+            end
+            # if @activation[n] == :softmax
+            #   # TODO: values = @propagation_functions[n].call(sums)
+            #   values.each_index { |j| @activation_nodes[n + 1][j] = values[j] }
+            # else
+            sums.each_index do |j|
+              @activation_nodes[n + 1][j] = propagation_functions(sums[j]) # TODO: propagation_functions(n).call(sums[j])
             end
           end
-          # if @activation[n] == :softmax
-          #   # TODO: values = @propagation_functions[n].call(sums)
-          #   values.each_index { |j| @activation_nodes[n + 1][j] = values[j] }
-          # else
-          sums.each_index do |j|
-            @activation_nodes[n + 1][j] = propagation_functions(sums[j]) # TODO: propagation_functions(n).call(sums[j])
-          end
-          # end
         end
+        Fiber.yield
       end
 
       # Initialize neurons structure.
@@ -544,19 +549,22 @@ module Ai4cr3
       def calculate_internal_deltas : Array(Array(Float64))
         prev_deltas = @deltas.last
         (@activation_nodes.size - 2).downto(1) do |layer_index|
-          # layer_deltas = Array(Array(Float64)).new
-          layer_deltas = Array(Float64).new
-          @activation_nodes[layer_index].each_index do |j|
-            error = calculate_internal_deltas_structure(j, layer_index, prev_deltas)
-            # puts "error == #{error}"
+          spawn do
+            # layer_deltas = Array(Array(Float64)).new
+            layer_deltas = Array(Float64).new
+            @activation_nodes[layer_index].each_index do |j|
+              error = calculate_internal_deltas_structure(j, layer_index, prev_deltas)
+              # puts "error == #{error}"
 
-            # layer_deltas[j] = derivative_functions(@activation_nodes[layer_index][j]) * error
-            layer_deltas << derivative_functions(@activation_nodes[layer_index][j]) * error
-            # puts "layer_deltas == #{layer_deltas}"
-            # TODO: Above!!!
+              # layer_deltas[j] = derivative_functions(@activation_nodes[layer_index][j]) * error
+              layer_deltas << derivative_functions(@activation_nodes[layer_index][j]) * error
+              # puts "layer_deltas == #{layer_deltas}"
+              # TODO: Above!!!
+            end
+            prev_deltas = layer_deltas
+            @deltas.unshift(layer_deltas)
           end
-          prev_deltas = layer_deltas
-          @deltas.unshift(layer_deltas)
+          Fiber.yield
         end
         @deltas
       end
@@ -626,19 +634,22 @@ module Ai4cr3
       def update_weights : Array(Array(Array(Float64)))
         # n_min = 10; n_max = 0
         (@weights.size - 1).downto(0) do |n|
-          # # n: 0..0
-          # n_min = n if n < n_min
-          # n_max = n if n > n_max
-          # i_min = 10; i_max = 0
-          @weights[n].each_index do |i|
-            # # i: 0..3
-            # i_min = i if i < i_min
-            # i_max = i if i > i_max
-            # j_min = 10; j_max = 0
-            @weights[n][i].each_index do |j|
-              calc_a_single_weight(n, i, j)
+          spawn do
+            # # n: 0..0
+            # n_min = n if n < n_min
+            # n_max = n if n > n_max
+            # i_min = 10; i_max = 0
+            @weights[n].each_index do |i|
+              # # i: 0..3
+              # i_min = i if i < i_min
+              # i_max = i if i > i_max
+              # j_min = 10; j_max = 0
+              @weights[n][i].each_index do |j|
+                calc_a_single_weight(n, i, j)
+              end
             end
           end
+          Fiber.yield
         end
         @weights
       end
