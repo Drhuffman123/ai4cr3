@@ -278,8 +278,8 @@ module Ai4cr3
                 end
               end
             end
-            Fiber.yield
           end
+          Fiber.yield
 
           sum_error += calculate_loss(outputs, @activation_nodes.last)
         end
@@ -564,8 +564,8 @@ module Ai4cr3
             prev_deltas = layer_deltas
             @deltas.unshift(layer_deltas)
           end
-          Fiber.yield
         end
+        Fiber.yield
         @deltas
       end
 
