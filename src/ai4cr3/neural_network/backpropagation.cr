@@ -278,7 +278,7 @@ module Ai4cr3
                 end
               end
             end
-            
+            Fiber.yield
           end
 
           sum_error += calculate_loss(outputs, @activation_nodes.last)
