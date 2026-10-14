@@ -13,6 +13,9 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
   end
 
   context "saves to yaml and reloads from yaml" do
+    before_each do
+      Dir.mkdir("spec/saves")
+    end
 
     it "saves to yaml" do
       # structure = [3, 120]
