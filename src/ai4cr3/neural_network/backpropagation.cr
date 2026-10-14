@@ -1,43 +1,60 @@
 # (re-)Ported from:       https://github.com/SergioFierens/ai4r
 
-class IOException < Exception
+require "yaml"
+
+class Ai4cr3Exception < Exception
+  # include YAML::Serializable
+
+  def initialize(@structure = Array(Int32).new) # , @inputs = Array(Float64).new, @outputs = [0.0]) # @outputs = Array(Float64).new)
+  end
+
+  def to_s(io : IO) : Nil
+    io << "Wrong Ai4cr3 config. Given: (structure): #{@structure}" # Expected (inputs), received (inputs) : #{@inputs}, Expected (outputs), received (outputs) : #{@outputs}, given: (structure): #{@structure}."
+  end
+end
+
+
+class IOException < Ai4cr3Exception
   def initialize(@structure : Array(Int32), @inputs : Array(Float64), @outputs : Array(Float64))
   end
 
   def to_s(io : IO) : Nil
-    io << "Wrong number of inputs and outputs. Expected (inputs): #{@structure.first}, received (inputs): #{@inputs}, Expected (outputs): #{@structure.last}, received (outputs): #{@outputs}."
+    io << "Wrong number of inputs and outputs. Expected (inputs): #{@structure.first}, received (inputs): #{@inputs}, Expected (outputs): #{@structure.last}, received (outputs): #{@outputs}, given: (structure): #{@structure}."
   end
 end
 
-class InputsException < Exception
+class InputsException < Ai4cr3Exception
   def initialize(@structure : Array(Int32), @inputs : Array(Float64))
   end
 
   def to_s(io : IO) : Nil
-    io << "Wrong number of inputs. Expected: #{@structure.first}, received: #{@inputs}."
+    io << "Wrong number of inputs. Expected: #{@structure.first}, received: #{@inputs}., given: (structure): #{@structure}."
   end
 end
 
-class OutputsException < Exception
+class OutputsException < Ai4cr3Exception
   def initialize(@structure : Array(Int32), @inputs : Array(Float64))
   end
 
   def to_s(io : IO) : Nil
-    io << "Wrong number of outputs. Expected: #{@structure.last}, received: #{@inputs}."
+    io << "Wrong number of outputs. Expected: #{@structure.last}, received: #{@inputs}., given: (structure): #{@structure}."
   end
 end
 
-require "yaml"
+# enum ActivationType
+#   Sigmoid # aka "Sigmoid"
+# end
 
 module Ai4cr3
   module NeuralNetwork
     class Backpropagation
       include YAML::Serializable
-      # include Ai4r::Data::Parameterizable
-
+      include YAML::Serializable::Strict
+      include YAML::Serializable::Unmapped
+           
       property structure : Array(Int32)
-      # property activation : Array(Symbol) | Symbol # one per structure layer
       property weights : Array(Array(Array(Float64))) = [[[0.0]]]
+      property activation : Array(String) = ["Sigmoid"]
       property activation_nodes : Array(Array(Float64)) = [[0.0]]
       property last_changes : Array(Array(Array(Float64))) = [[[0.0]]]
       property deltas : Array(Array(Float64)) = [[0.0]]
@@ -46,45 +63,18 @@ module Ai4cr3
       property momentum = 0.1
       property prev_error = 0.0
 
-      # property weight_init : Symbol
-
-      # Creates a new network specifying the its architecture.
-      # E.g.
-      #
-      #   net = Backpropagation.new([4, 3, 2])  # 4 inputs
-      #                                         # 1 hidden layer with 3 neurons,
-      #                                         # 2 outputs
-      #   net = Backpropagation.new([2, 3, 3, 4])   # 2 inputs
-      #                                             # 2 hidden layer with 3 neurons each,
-      #                                             # 4 outputs
-      #   net = Backpropagation.new([2, 1])   # 2 inputs
-      #                                       # No hidden layer
-      #                                       # 1 output
-      # @param network_structure [Object]
-      # @param activation [Object]
-      # # @param weight_init [Object]
-      # @return [Object]
-      def initialize(network_structure : Array(Int32), activation = [:sigmoid]) # , weight_init = :uniform)
-        # @activation = :sigmoid # DEFAULT for now
-
+      def initialize(network_structure : Array(Int32), activation = ["Sigmoid"]) # , weight_init = :uniform)
         @structure = network_structure
+        # activation
+        # weight_init
         @weights = Array(Array(Array(Float64))).new
         @activation_nodes = Array(Array(Float64)).new
         @last_changes = Array(Array(Array(Float64))).new
-
-        # @weight_init = weight_init
         @custom_propagation = false
-        # @set_by_loss = true
-        # @activation = activation
-
-        # @activation_overridden = (activation != :sigmoid)
-        # @set_by_loss = false
         @disable_bias = false
-        # @learning_rate = 0.25
-        # @momentum = 0.1
-        # @loss_function = :mse
         init_network
       end
+
 
       # When the activation parameter changes, update internal lambdas for each
       # layer. Accepts a single symbol or an array of symbols (one for each
@@ -373,6 +363,7 @@ module Ai4cr3
         self
       end
 
+
       # # Custom serialization. It used to fail trying to serialize because
       # # it uses lambda functions internally, and they cannot be serialized.
       # # Now it does not fail, but if you customize the values of
@@ -399,7 +390,7 @@ module Ai4cr3
       # protected def marshal_load(ary)
       #   @structure, @disable_bias, @learning_rate, @momentum, @weights, @last_changes, @activation_nodes, @activation = ary
       #   @weight_init = :uniform
-      #   @activation = @activation || :sigmoid
+      #   @activation = @activation || "Sigmoid"
       # end
 
       # Propagate error backwards
@@ -505,6 +496,7 @@ module Ai4cr3
         @deltas = [output_deltas]
       end
 
+
       # protected
       def calculate_internal_deltas_factor(weights, layer_index, j, k) : Float64
         weights[layer_index.round.to_i][j.round.to_i][k.round.to_i]
@@ -544,7 +536,6 @@ module Ai4cr3
       #     @deltas.unshift(layer_deltas)
       #   end
       # end
-
       # Calculate deltas for hidden layers
       # @return [Object]
       def calculate_internal_deltas : Array(Array(Float64))
@@ -751,6 +742,7 @@ module Ai4cr3
       #                           'momentum.',
       #                 loss_function: 'Loss function used when training (:mse or ' \
       #                                ':cross_entropy). Default: :mse'
+ 
     end
   end
 end
