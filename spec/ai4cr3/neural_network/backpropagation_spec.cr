@@ -1,20 +1,63 @@
-require "../../spec_helper"
+require "../../spec_helper.cr"
 require "../../../src/ai4cr3/neural_network/backpropagation.cr"
 
 STRUCTURE = [3, 120]
 TESTER    = Ai4cr3::NeuralNetwork::Backpropagation.new(STRUCTURE)
 
 Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
-  # subject { TESTER }
-
-  # let(tester) { TESTER.dup }
-
-  # TODO: Write tests
   it "works" do
     # structure = [3, 120]
     # TESTER = Ai4cr3::NeuralNetwork::Backpropagation.new(structure)
     puts "TESTER" + TESTER.to_s
     expect(TESTER).to be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+  end
+
+  context "saves to yaml and reloads from yaml" do
+    before_each do
+      path = "spec/saves"
+      Dir.mkdir(path) unless Dir.exists?(path)
+    end
+
+    it "saves to yaml" do
+      # structure = [3, 120]
+      # TESTER = Ai4cr3::NeuralNetwork::Backpropagation.new(structure)
+      puts "TESTER" + TESTER.to_s
+      to_path = "spec/saves/example.yaml"
+      content = TESTER.to_yaml
+      File.write(to_path, content)
+      expect(TESTER).to be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+    end
+
+    # skip
+    it "reloads from yaml" do
+      # # structure = [3, 120]
+      # # TESTER = Ai4cr3::NeuralNetwork::Backpropagation.new(structure)
+
+      from_path = "spec/saves/example.yaml"
+      content = File.open(from_path) do |file|
+        Ai4cr3::NeuralNetwork::Backpropagation.from_yaml(file)
+      end
+      puts "\n\nfrom_path.. content:...\n"
+      puts File.read(from_path)
+      puts "\nfrom_path.. content!\n"
+      puts "TESTER" + content.to_s
+      expect(content).to be_a(Ai4cr3::NeuralNetwork::Backpropagation)
+# Failures:
+# 
+#   1) Ai4cr3::NeuralNetwork::Backpropagation saves to yaml and reloads from yaml reloads from yaml
+#      Error: Expected mapping, not YAML::Nodes::Scalar at line 1, column 1
+# 
+#      YAML::ParseException: Expected mapping, not YAML::Nodes::Scalar at line 1, column 1
+#        /usr/share/crystal/src/yaml/nodes/nodes.cr:30:7 in 'raise'
+#        src/ai4cr3/neural_network/backpropagation.cr:35:7 in 'initialize:__context_for_yaml_serializable:__node_for_yaml_serializable'
+#        src/ai4cr3/neural_network/backpropagation.cr:35:7 in 'new_from_yaml_node'
+#        src/ai4cr3/neural_network/backpropagation.cr:35:7 in 'new'
+#        /usr/share/crystal/src/yaml/from_yaml.cr:12:3 in 'from_yaml'
+#        spec/ai4cr3/neural_network/backpropagation_spec.cr:39:1 in '__temp_163'
+#        spec/ai4cr3/neural_network/backpropagation_spec.cr:31:1 in '->'
+# 
+#      # spec/ai4cr3/neural_network/backpropagation_spec.cr:31:43
+    end
   end
 
   context "initialize" do
@@ -23,8 +66,8 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
 
       expect(TESTER.weights).to be_a(Array(Array(Array(Float64))))
       expect(TESTER.last_changes).to be_a(Array(Array(Array(Float64))))
-      # (TESTER.weight_init).to be_a(Symbol)
-      # (TESTER.activation).to be_a(Array(Symbol))
+      # (TESTER.weight_init).to be_a(String)
+      expect(TESTER.activation).to be_a(Array(String))
     end
 
     it "sets main var values" do
@@ -46,7 +89,7 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
     end
   end
 
-  context "returns a Float64" do
+  context "initial_weight_function" do
     it "returns a Float64" do
       # TESTER = Ai4cr3::NeuralNetwork::Backpropagation.new(structure)
       expect(TESTER.initial_weight_function).to be_a(Float64)
@@ -372,7 +415,7 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
     #   expect(TESTER.eval(input_values)).to eq(output_values)
     # end
   end
-
+  
   context "train" do
     it "calls some methods" do
       input_values = [1.0, 0.5, 0.75]
