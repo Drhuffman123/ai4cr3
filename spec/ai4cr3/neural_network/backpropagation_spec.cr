@@ -14,7 +14,8 @@ Spectator.describe "Ai4cr3::NeuralNetwork::Backpropagation" do
 
   context "saves to yaml and reloads from yaml" do
     before_each do
-      Dir.mkdir("spec/saves")
+      path = "spec/saves"
+      Dir.mkdir(path) unless Dir.exists?(path)
     end
 
     it "saves to yaml" do
