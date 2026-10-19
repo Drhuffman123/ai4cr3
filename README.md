@@ -1,6 +1,6 @@
 # ai4cr3
 
-Version: 0.0.21
+Version: 0.0.22
 
 [![Crystal CI](https://github.com/drhuffman123/ai4cr3/actions/workflows/crystal.yml/badge.svg)](https://github.com/drhuffman12/ai4cr3/actions/workflows/crystal.yml)
 
